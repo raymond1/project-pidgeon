@@ -21,3 +21,8 @@ body {
     background-color: white;
     width: 500px;
 }
+
+#decoded-message-area {
+    background-color: white;
+    width: 500px;
+}

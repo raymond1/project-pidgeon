@@ -1,5 +1,5 @@
 $(".canto-letter-button").click(function () {
-    $("#message-area").append("<img class='canto-letter-svg-small' src='./assets/cantobet-svg-files/bolong.svg' alt='bolong'>");
+    $("#message-area").append("<img class='canto-letter-svg-small' src='./assets/cantobet-svg-files/bolong.svg' alt='bolong' value='[1]'>");
 });
 
 $("#backspace-button").click(function () {
@@ -7,5 +7,16 @@ $("#backspace-button").click(function () {
 });
 
 $("#space-button").click(function () {
-    $("#message-area").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+    $("#message-area").append("&nbsp;");
+});
+
+$("#encode-button").click(function () {
+    $("#message-area img").each(function (index) {
+        $("#encode-output").append(($(this).attr("value")));
+    });
+});
+
+$("#decode-button").click(function () {
+    var encodedText = $("#encode-output").val();
+    $("#decoded-message-area").append(encodedText);
 });
