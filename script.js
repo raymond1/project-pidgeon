@@ -20,3 +20,14 @@ $("#decode-button").click(function () {
     var encodedText = $("#encode-output").val();
     $("#decoded-message-area").append(encodedText);
 });
+
+// Create JavaScript object. The Key is equal to the encode string, and the value is the associated SVG file.
+// Add 45 placeholder values to the JS object.
+// Add SVG characters on a rolling basis.
+
+// var cantobet = {
+//     "[1]": "bolong.svg",
+//     "[..]": "xxxxxx.svg",
+//     "[46]": "xxxxxx.svg",
+// };
+
