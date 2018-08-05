@@ -5,3 +5,7 @@ $(".canto-letter-button").click(function () {
 $("#backspace-button").click(function () {
     $("#message-area img:last-child").remove();
 });
+
+$("#space-button").click(function () {
+    $("#message-area").append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+});

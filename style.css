@@ -16,3 +16,8 @@ body {
     position: relative;
     width: 50px;
 }
+
+#message-area {
+    background-color: white;
+    width: 500px;
+}
