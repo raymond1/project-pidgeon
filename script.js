@@ -30,4 +30,3 @@ $("#decode-button").click(function () {
 //     "[..]": "xxxxxx.svg",
 //     "[46]": "xxxxxx.svg",
 // };
-
