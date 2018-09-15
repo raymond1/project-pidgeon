@@ -1,3 +1,7 @@
+<?php
+
+function generate(){
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -59,3 +63,15 @@
 
 </html>
 
+<?php
+
+}
+ob_start();
+generate();
+$output_contents = ob_get_contents();
+
+$output_file = fopen('index.html', 'w+');
+fwrite($output_file, $output_contents);
+fclose($output_file);
+ob_end_clean();
+?>
