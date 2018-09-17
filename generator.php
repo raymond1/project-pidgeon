@@ -26,16 +26,32 @@ function generate(){
             <a target="_blank" href="https://github.com/larry1010/project-pidgeon">https://github.com/larry1010/project-pidgeon</a>
         </li>
     </ul>
+
+    <button type='button' id='options'>Options</button>
+
     <hr>
-    <button id="space-button" type="button">Space</button>
     <button id="backspace-button" type="button">Backspace</button>
     <hr>
-    <button class="canto-letter-button" type="button" value="1">
-        <img class="canto-letter-svg" src="./assets/cantobet-svg-files/bolong.svg" alt="bolong">
-    </button>
-    <button class="canto-letter-button" type="button" value="2">
-        <img class="canto-letter-svg" src="./assets/cantobet-svg-files/bolong.svg" alt="bolong">
-    </button>
+
+    <div class='button-group'>
+        <div class="canto-letter-button" type="button" value="space"> adf</div>
+<?php
+
+	for ($i = 1; $i <= 46; $i++){
+        if ($i >= 38 and $i <= 46){
+            $symbolclass = "small";
+        }else{
+            $symbolclass = "";
+        }
+?>
+        <button class="canto-letter-button <?= $symbolclass ?>" type="button" value="<?= $i ?>">
+            <img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg">
+        </button>
+
+<?php
+    }
+?>
+    </div>
     <hr>
     <div>
         Message Area
