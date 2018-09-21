@@ -1,0 +1,18 @@
+{
+  text-direction: "",
+  symbols{
+    [
+      {
+        symbol: 1,
+        position:{
+          x:asdfsd,
+          y:adfsdf
+        }
+        size:{
+          width: 10,
+          height: 10
+        }
+      }
+    ]
+  }
+}

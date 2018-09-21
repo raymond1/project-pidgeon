@@ -34,7 +34,7 @@ function generate(){
     <hr>
 
     <div class='button-group'>
-        <div class="canto-letter-button" type="button" value="space"> adf</div>
+        <div class="canto-letter-button" type="button" value="space">Space</div>
 <?php
 
 	for ($i = 1; $i <= 46; $i++){
