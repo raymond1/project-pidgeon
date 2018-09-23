@@ -34,7 +34,9 @@ function generate(){
     <hr>
 
     <div class='button-group'>
-        <div class="canto-letter-button" type="button" value="space">Space</div>
+        <button class="canto-letter-button" type="button" value="space">
+            <img class="canto-letter-svg" src="./assets/cantobet-svg-files/space.svg" alt="space">
+        </button>
 <?php
 
 	for ($i = 1; $i <= 46; $i++){

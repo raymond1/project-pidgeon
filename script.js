@@ -32,16 +32,28 @@ class Tile{
         this.secondary_glyph = secondary_glyph;
         this.secondary_glyph_location = secondary_glyph_location; //top, right, bottom, left
         this.needs_drawing = true;
+        this.padding = 5;//padding is in pixels
     }
-    draw(){
+
+    draw(cursor){
         var new_letter = document.createElement('img');
         new_letter.src = 'assets/cantobet-svg-files/' + this.primary_glyph.image_id + '.svg';
         new_letter.setAttribute('class', 'letter');
-        new_letter.style.left = this.primary_glyph.x + 'px';
-        new_letter.style.top = this.primary_glyph.y + 'px';
+        new_letter.style.left = cursor.x + 'px';
+        new_letter.style.top = cursor.y + 'px';
+        new_letter.style.width = this.primary_glyph.width;
+        new_letter.style.height = this.primary_glyph.height;
+        new_letter.style.padding = this.padding + "px";
 
         $('#message-area').append(new_letter);
         this.needs_drawing = false;
+
+        //return some information as to what size of glyph was drawn
+        var size_drawn = {width: this.primary_glyph.width + 2 * this.padding, height: this.primary_glyph.height + 2 * this.padding};
+        var draw_information = {
+            size: size_drawn
+        };
+        return draw_information;
     }
 
 }
@@ -82,14 +94,16 @@ class Document{
     }
 
     add_glyph(glyph_number){
-        this.tiles.append(new Tile(new Glyph(100,100,0,0,glyph_number), null, null));
+        this.tiles.append(new Tile(new Glyph(50,50,0,0,glyph_number), null, null));
     }
 
     render(){
         var tile_iterator = this.tiles.head;
         while (tile_iterator != null){
             if (tile_iterator.needs_drawing){
-                tile_iterator.draw();
+                var draw_information = tile_iterator.draw(this.cursor);
+                //Update the cursor
+                this.cursor.x = this.cursor.x + draw_information.size.width;
             }
             // //At the cursor, check if the requested tile size fits onto the drawing area.
             // //If yes then draw tet. If no, do not draw it and exit the loop with an error.
@@ -103,53 +117,10 @@ class Document{
         }
     }
 
-
-
-    //Ask a page if it has room for another character
-    // get_render_location(){
-    //     //Find first free page
-    //     //Find first free line.
-    //     //If no free space, then add a page.
-    //     //if ()
-
-    //     //How do I know if a page is free?
-    //     //Is there an unfilled slot?
-
-    //     //Request a page, line, and slot
-    //     get_free_page()
-    // }
-
-    // find_beginning(){
-
-    // }
+    updateCursor(){}
 }
 
 var document1 = new Document("top to bottom", "right to left", 500, 500);
-//var glyphs = [];
-
-/*
-for (var i = 0; i < )
-
-
-for (var i = 1; i < 46; i++){
-    if (i >= 1 && i <= 37){
-        symbol_sizes[i] = {
-            name: i + "",
-            size:{
-                width: 100,
-                height: 100
-            }
-        }    
-    }else if (i >= 38 && i <= 46){
-        symbol_sizes[i] = {
-            name: i + "",
-            size:{
-                width: 50,
-                height: 50
-            }
-        }    
-    }
-}*/
 
 $('.canto-letter-button').click(
     function(){
@@ -159,58 +130,12 @@ $('.canto-letter-button').click(
     }
 );
 
-/*
-//This uses the direction of writing, the size of the canvas, and the locations of existing letters to generate the locations of the symbols on the page.
-function determine_location_of_next_letter(letter_value){
-  if (primary_direction == "top to bottom"){
-      if (secondary_direction = "right to left"){
-          var object_size = {}
-          //What is the size of the object you are trying to input?
-          //What is the size of the canvas?
-
-
-          //Find highest open spot
-          //start at lower-right corner.
-          //Is there space on the line?
-          //If no space, go to next line
-          //If no space on next line, go to next page.
-      }
-  }
-}
-*/
 
 /*
-function render(letter_value){
     //1-37 = letters
     //38-44 = tonal symbols
     //45 - short indicator
     //46 - saliva symbol
 
-    var new_letter = document.createElement('img');
-    new_letter.src = 'assets/cantobet-svg-files/' + letter_value + '.svg';
-    new_letter.setAttribute('class', 'letter');
-
-    var location_of_next_letter = determine_location_of_next_letter(letter_value);
-//    new_letter.style.left = '15px';
-//    new_letter.style.top = '25px';
-//    document.getElementById("message-area").offsetWidth;
-
-    $('#message-area').append(new_letter);
-    console.log($('#message-area').width());
-    console.log($('#message-area').height());
-    cursor_location= {}
-}
-
-
-function draw_cursor(){
-    //given the direction
-}*/
-
-
 // [04] Get rid of manual button pushes. Encoding and decoding should happen automatically as you type.
-
-// var cantobet = {
-//     "[1]": "bolong.svg",
-//     "[..]": "xxxxxx.svg",
-//     "[46]": "xxxxxx.svg",
-// };
+*/
