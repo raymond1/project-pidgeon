@@ -57,7 +57,7 @@ function generate(){
     <hr>
     <div>
         Message Area
-        <div id="message-area"></div>
+        <div id="message_area"></div>
     </div>
     <hr>
     <button id="encode-button" type="button">Encode</button>
