@@ -47,7 +47,9 @@ class Glyph{
 
 //A tile has its own position, independent of the glyphs that it contains.
 class Tile{
-    //primary_glyph is the only required parameter
+    //parent_document is required(because of the writing direction)
+    //primary_glyph is required
+
     constructor(primary_glyph, position, secondary_glyph, secondary_glyph_location){
         this.primary_glyph = primary_glyph;
 
@@ -62,6 +64,11 @@ class Tile{
         }else{
             this.position = {x:0,y:0}
         }
+    }
+
+    getCorners(){
+        //left top, left bottom, right bottom, right top
+        return [{x:this.position.x,y:this.position.y},{x:this.position.x,y:this.position.y + this.size.y},{x:this.position.x + this.size.x,y:this.position.y + this.size.y},{x:this.position.x + this.size.x,y:this.position.y + this.size.y}];
     }
 
     draw(){
@@ -142,17 +149,20 @@ class Tile{
 }
 
 class Page{
-    constructor(width, height){
-        this.width = width;
-        this.height = height;
+    constructor(size){
+        this.size = {x: size.x, y: size.y};
     }
 }
 
 class Cursor{
-    constructor(){
-        this.position = {x : 0, y : 0}
+    constructor(page, position){
+        if (!position){
+            position = {x:page.size.x, y:0}
+        }
+        this.position = position;
         this.image_url = 'assets/ui/cursor.svg';
         this.element = null;
+        this.page = page; //The page that a cursor is on
     }
 
     draw(){
@@ -178,20 +188,53 @@ class Cursor{
 }
 
 class Document{
-    //size_x and size_y are the size of the page in pixels
+    //size.x and size.y are the size of the page in pixels
     //The only required parameter is size
     constructor(size, primary_direction, secondary_direction){
-
-        if (typeof primary_direction === 'undefined'){
+        if (!primary_direction){
             primary_direction = 'top to bottom';
         }
         this.primary_direction = primary_direction;
+
+        if (!secondary_direction){
+            secondary_direction = 'right to left';
+        }
         this.secondary_direction = secondary_direction;
-        this.size = {x: size.x, y: size.y}
 
         this.tiles = new LinkedList();
-        this.cursor = new Cursor();
-        this.render();
+        this.pages = new LinkedList();
+        this.pages.append(new Page(size));
+        this.cursor = new Cursor(this.pages.head);
+    }
+
+    //A new line is started using the size of a newly added tile
+    moveCursorToNextLine(new_tile){
+        var new_position = {x: this.cursor.position.x, y: this.cursor.position.y};
+//debugger;
+        if (this.secondary_direction == "top to bottom"){
+            new_position.y = this.cursor.position.y + new_tile.size.y;
+        }else if (this.secondary_direction == "right to left"){
+            new_position.x = this.cursor.position.x - new_tile.size.x;
+        }else if (this.secondary_direction == "bottom to top"){
+            new_position.y = this.cursor.position.y - new_tile.size.y;
+        }else if (this.secondary_direction == "left to right"){            
+            new_position.x = this.cursor.position.x + new_tile.size.x;
+        }
+
+        if (this.primary_direction == "top to bottom"){
+            new_position.y = 0;
+        }
+        else if (this.primary_direction == "right to left"){
+            new_position.x = this.pages.head.size.x - new_tile.size.x;
+        }
+        else if (this.primary_direction == "bottom to top"){
+            new_position.y = this.pages.head.size.y - new_tile.size.y;
+        }
+        else if (this.primary_direction == "left to right"){
+            new_position.x = 0;
+        }
+        this.cursor.position.x = new_position.x;
+        this.cursor.position.y = new_position.y;
     }
 
     getImageURLFromPrimaryGlyphString(primary_glyph_string){
@@ -200,8 +243,24 @@ class Document{
 
     //Takes in a number and puts a tile with that glyph on the page.
     addTile(primary_glyph_string){
-        var new_tile = new Tile(new Glyph(this.getImageURLFromPrimaryGlyphString(primary_glyph_string), {x:500, y:50}), {x:this.cursor.position.x, y:this.cursor.position.y});
+        var new_tile = new Tile(new Glyph(this.getImageURLFromPrimaryGlyphString(primary_glyph_string), {x:50, y:50}), {x:this.cursor.position.x, y:this.cursor.position.y});
+debugger;
+        var success = false;
         if (this.checkFit(new_tile)){
+            //fit strategy 1--space is immediately available
+            success = true;
+        }else{
+            //fit strategy 2--space is available on new line
+            this.moveCursorToNextLine(new_tile);
+            //Move the cursor and the tile
+            new_tile.position.x = this.cursor.position.x;
+            new_tile.position.y = this.cursor.position.y;
+            if (this.checkFit(new_tile)){
+                success = true;
+            }
+        }
+
+        if (success){
             this.tiles.append(new_tile);
             if (this.primary_direction == "top to bottom"){
                 this.cursor.move({x: this.cursor.position.x, y: this.cursor.position.y + new_tile.height});
@@ -214,14 +273,6 @@ class Document{
             else if (this.primary_direction == "left to right"){
                 this.cursor.move({x: this.cursor.position.x + new_tile.width, y: this.cursor.position.y});
             }
-        }else{
-console.log('no fit');
-            /*
-            this.cursor.x = 0;
-            this.cursor.y = this.cursor.y + new_tile.size.y;
-            if (this.checkFit(new_tile)){
-                this.tiles.append(new_tile);
-            }*/
         }
     }
 
@@ -267,20 +318,28 @@ console.log('no fit');
     //Returns true if the tile fits onto the page
     checkFit(tile){
         var return_value = true;
-        if (tile.position.x < 0){
-            return_value = false;
-        } else if (tile.position.x + tile.size.x >= this.size.x){
-            return_value = false;
-        } else if (tile.position.y < 0){
-            return_value = false;
-        } else if (tile.position.y + tile.size.y >= this.size.y){
-            return_value = false;
+
+        var corners = tile.getCorners();
+        for (var i = 0; i < 4; i++){
+            if (!this.pointWithinBounds(corners[i])){
+                return_value = false;
+                break;
+            }
         }
         return return_value;
     }
 
-    displayCursor(){
+    //point is of the form (x,y)
+    pointWithinBounds(point){
+        var return_value = true;
+        //If any of the four corners is out of the drawing area, then the tile does not fit on the page
+        if (point.x < 0 || point.x > this.pages.head.size.x){
+            return_value = false;
+        } else if (point.y < 0 || point.y > this.pages.head.size.y){
+            return_value = false;
+        }
 
+        return return_value;
     }
 }
 
@@ -299,6 +358,7 @@ $(document).ready(
     function(){
         var document1_size = {x:$('#message_area').width(), y:500}
         var document1 = new Document(document1_size);
+        document1.render();
         
         $('.canto-letter-button').click(
             function(){
