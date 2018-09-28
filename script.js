@@ -16,7 +16,7 @@ class LinkedList{
         }
     }
 
-    last(){
+    get last(){
         var last = this.head;
         if (last == null){
             return null;
@@ -32,67 +32,156 @@ class LinkedList{
 class Glyph{
     //image_url and content_size are required parameters
     //Content_size is the size of the glyph before padding is added around it.
-    constructor(image_url, content_size){
+    //parent_tile is the tile object that contains the glyph
+    constructor(image_url, content_size, parent_tile){
         this.content_size = {x: content_size.x,y:content_size.y}
         this.position = {x:0,y:0} //relative to top left corner of a tile
         this.next = null;
         this.padding = 5;
         this.image_url = image_url;
+        this.needs_drawing = true;
+        this.htmlElement = null;
+        this.parent_tile = parent_tile;
+        this.needs_drawing = true;
     }
 
     get size(){
         return {x: this.content_size.x + 2 * this.padding, y: this.content_size.y + 2 * this.padding}
     }
+
+    get width(){
+        return this.size.x;
+    }
+    get height(){
+        return this.size.y;
+    }
+
+    //requires that parent_tile has been set
+    draw(){
+        if (!this.htmlElement){
+            this.htmlElement = document.createElement('img');
+            $(this.parent_tile.htmlElement).first().append(this.htmlElement);
+            this.htmlElement.style.position = 'absolute';
+        }
+        this.htmlElement.src = this.image_url;
+        this.htmlElement.style.left = this.position.x + 'px';
+        this.htmlElement.style.top = this.position.y + 'px';
+        this.htmlElement.style.width = this.width + 'px';
+        this.htmlElement.style.height = this.height + 'px';
+        this.needs_drawing = false;
+    }
 }
 
 //A tile has its own position, independent of the glyphs that it contains.
 class Tile{
-    //parent_document is required(because of the writing direction)
-    //primary_glyph is required
-
-    constructor(primary_glyph, position, secondary_glyph, secondary_glyph_location){
+    constructor(parent_document, primary_glyph, position, secondary_glyph, secondary_glyph_location){
+        this.parent_document = parent_document;
         this.primary_glyph = primary_glyph;
-
-        if (typeof secondary_glyph == 'undefined'){
-            secondary_glyph = null;
-        }
         this.secondary_glyph = secondary_glyph;
         this.secondary_glyph_location = secondary_glyph_location; //"top", right, bottom, left. Refers to location of secondary glyph relative to primary glyph
         this.needs_drawing = true;
-        if (typeof position !== 'undefined'){
-            this.position = position; //position is of the form {x:0, y:0}
-        }else{
-            this.position = {x:0,y:0}
-        }
+        this.position = position;
+        this.htmlElement = null;
+        this.padding = 0;
     }
 
     getCorners(){
-        //left top, left bottom, right bottom, right top
-        return [{x:this.position.x,y:this.position.y},{x:this.position.x,y:this.position.y + this.size.y},{x:this.position.x + this.size.x,y:this.position.y + this.size.y},{x:this.position.x + this.size.x,y:this.position.y + this.size.y}];
-    }
-
-    draw(){
-        if (this.secondary_glyph != null){
-            var secondary_glyph = document.createElement('img');
-            secondary_glyph.src = this.secondary_glyph.image_url;
-            secondary_glyph.style.left = this.position.x + this.secondary_glyph.position.x;
-            secondary_glyph.style.top = this.position.y + this.secondary_glyph.position.y;
-            secondary_glyph.style.width = this.secondary_glyph.width;
-            secondary_glyph.style.height = this.secondary_glyph.height;
-            secondary_glyph.style.padding = this.secondary_glyph.padding + 'px';
-            $('#message_area').append(secondary_glyph);
+        //Order for corners is left top, left bottom, right bottom, right top
+        var lt = {x:this.position.x, y:this.position.y};
+        var lb = {x:this.position.x, y:this.position.y};
+        var rb = {x:this.position.x, y:this.position.y};
+        var rt = {x:this.position.x, y:this.position.y};
+        if (this.parent_document.primary_direction == "top to bottom"){
+            lb.y = this.position.y + this.size.y;
+            rb.y = this.position.y + this.size.y;
+        }
+        else if (this.parent_document.primary_direction == "right to left"){
+            lt.x = this.position.x - this.size.x;
+            lb.x = this.position.x - this.size.x;
+        }
+        else if (this.parent_document.primary_direction == "bottom to top"){
+            lt.y = this.position.y - this.size.y;
+            rt.y = this.position.y - this.size.y;
+        }
+        else if (this.parent_document.primary_direction == "left to right"){
+            rb.x = this.position.x + this.size.x;
+            rt.x = this.position.x + this.size.x;
         }
 
+        if (this.parent_document.secondary_direction == "top to bottom"){
+            lb.y = this.position.y + this.size.y;
+            rb.y = this.position.y + this.size.y;
+        }
+        else if (this.parent_document.secondary_direction == "right to left"){
+            lt.x = this.position.x - this.size.x;
+            lb.x = this.position.x - this.size.x;
+        }
+        else if (this.parent_document.secondary_direction == "bottom to top"){
+            lt.y = this.position.y - this.size.y;
+            rt.y = this.position.y - this.size.y;
+        }
+        else if (this.parent_document.secondary_direction == "left to right"){
+            rb.x = this.position.x + this.size.x;
+            rt.x = this.position.x + this.size.x;
+        }
+
+        return [lt,lb,rb,rt];
+    }
+
+    //used to draw and redraw a tile
+    draw(){
+        var corners = this.getCorners();
+        if (!this.htmlElement){
+            this.htmlElement = document.createElement('div');            
+            this.htmlElement.style.position = 'absolute';
+            this.htmlElement.style.backgroundColor = '#ffe';
+
+            var innerHtmlElement = document.createElement('div');
+            innerHtmlElement.style.position = 'relative';
+            this.htmlElement.append(innerHtmlElement);
+
+            $('#message_area').append(this.htmlElement);
+        }
+        this.htmlElement.style.left = corners[0].x + 'px';
+        this.htmlElement.style.top = corners[0].y + 'px';
+        this.htmlElement.style.width = this.size.x + 'px';
+        this.htmlElement.style.height = this.size.y + 'px';
+        this.htmlElement.style.padding = this.padding + 'px';
+
+
+        if (this.secondary_glyph){
+            if (this.secondary_glyph.needs_drawing){
+
+                this.secondary_glyph.draw();
+            }
+/*            
+            var secondary_glyph = document.createElement('img');
+            secondary_glyph.src = this.secondary_glyph.image_url;
+            secondary_glyph.style.position = 'absolute';
+            $('#message_area').append(secondary_glyph);
+            secondary_glyph.style.zIndex = 100; //For troubleshooting only...
+            secondary_glyph.style.left = corners[0].x + this.secondary_glyph.position.x + 'px';
+            secondary_glyph.style.top = corners[0].y + this.secondary_glyph.position.y + 'px';
+            secondary_glyph.style.width = this.secondary_glyph.width + 'px';
+            secondary_glyph.style.height = this.secondary_glyph.height + 'px';
+            secondary_glyph.style.padding = this.secondary_glyph.padding + 'px';
+            this.secondary_glyph.needs_drawing = false;*/
+        }
+
+        if (this.primary_glyph.needs_drawing){
+            this.primary_glyph.draw();
+        }
+        /*
         var primary_glyph = document.createElement('img');
         primary_glyph.src = this.primary_glyph.image_url;
         primary_glyph.setAttribute('class', 'letter');
-        primary_glyph.style.left = this.position.x + this.primary_glyph.position.x + 'px';
-        primary_glyph.style.top = this.position.y + this.primary_glyph.position.y + 'px';
+        primary_glyph.style.left = corners[0].x + this.primary_glyph.position.x + 'px';
+        primary_glyph.style.top = corners[0].y + this.primary_glyph.position.y + 'px';
         primary_glyph.style.width = this.primary_glyph.width;
         primary_glyph.style.height = this.primary_glyph.height;
         primary_glyph.style.padding = this.primary_glyph.padding + 'px';
-
         $('#message_area').append(primary_glyph);
+*/
         this.needs_drawing = false;
     }
 
@@ -179,6 +268,7 @@ class Cursor{
         this.element.style.height = '25px';
     }
 
+    //Moving the cursor draws the cursor
     move(new_position){
         this.position.x = new_position.x;
         this.position.y = new_position.y;
@@ -206,11 +296,11 @@ class Document{
         this.pages.append(new Page(size));
         this.cursor = new Cursor(this.pages.head);
     }
+    
 
     //A new line is started using the size of a newly added tile
     moveCursorToNextLine(new_tile){
         var new_position = {x: this.cursor.position.x, y: this.cursor.position.y};
-//debugger;
         if (this.secondary_direction == "top to bottom"){
             new_position.y = this.cursor.position.y + new_tile.size.y;
         }else if (this.secondary_direction == "right to left"){
@@ -241,10 +331,17 @@ class Document{
         return image_directory + primary_glyph_string + '.svg';
     }
 
-    //Takes in a number and puts a tile with that glyph on the page.
+    //Takes in a glyph string(a unique string corresponding to each one of the glyphs) and puts a tile with that glyph on the page.
     addTile(primary_glyph_string){
-        var new_tile = new Tile(new Glyph(this.getImageURLFromPrimaryGlyphString(primary_glyph_string), {x:50, y:50}), {x:this.cursor.position.x, y:this.cursor.position.y});
-debugger;
+console.log('addTile');
+        var new_glyph =
+        new Glyph(
+            this.getImageURLFromPrimaryGlyphString(primary_glyph_string),
+            {x:50,y:50} //*Content size*/
+        );
+        var new_tile = new Tile(this, new_glyph, {x:this.cursor.position.x, y:this.cursor.position.y});
+        new_glyph.parent_tile = new_tile;
+
         var success = false;
         if (this.checkFit(new_tile)){
             //fit strategy 1--space is immediately available
@@ -276,39 +373,47 @@ debugger;
         }
     }
 
-    modifyTile(secondary_glyph_number){
-        /*
-        var last_tile = this.tiles.last;
-        if (last_tile != null){
-            last_tile.secondary_glyph = new Glyph(this.getImageURLFromPrimaryGlyphString(secondary_glyph_string));
-            last_tile.secondary_glyph_location = "top";
-        }
-        last_tile.needs_drawing = true;
-        */
+    modifyTile(secondary_glyph_string){
         console.log('modifyTile');
+
+debugger;
+        var last_tile = this.tiles.last;
+        var glyph_image_url = this.getImageURLFromPrimaryGlyphString(secondary_glyph_string);
+        if (last_tile != null){
+            if (!last_tile.secondary_glyph){
+                last_tile.secondary_glyph = new Glyph(glyph_image_url, {x:25,y:25}, last_tile);
+            }
+            last_tile.secondary_glyph.image_url = glyph_image_url;
+            last_tile.secondary_glyph_location = "top";
+            last_tile.secondary_glyph.position = {x:last_tile.primary_glyph.width/2 - last_tile.secondary_glyph.width/2, y:0}
+
+            last_tile.primary_glyph.position.x = 0;
+            last_tile.primary_glyph.position.y = last_tile.secondary_glyph.height;
+            last_tile.needs_drawing = true;
+            last_tile.primary_glyph.needs_drawing = true;
+            last_tile.secondary_glyph.needs_drawing = true;
+
+            if (this.primary_direction == "top to bottom"){
+                this.cursor.move({x: this.cursor.position.x, y: last_tile.position.y + last_tile.size.y});
+            }else if (this.primary_direction == "right to left"){
+                this.cursor.move({x: last_tile.position.x - last_tile.width, y: this.cursor.position.y});
+            }
+            else if (this.primary_direction == "bottom to top"){
+                this.cursor.move({x: this.cursor.position.x, y: last_tile.position.y - last_tile.size.y});
+            }
+            else if (this.primary_direction == "left to right"){
+                this.cursor.move({x: last_tile.position.x + last_tile.width, y: this.cursor.position.y});
+            }
+
+        }
     }
 
-    render(){
+    draw(){
         var tile_iterator = this.tiles.head;
         while (tile_iterator != null){
             if (tile_iterator.needs_drawing){
                 tile_iterator.draw();
-                
-                
-                //If drawing failed, update the cursor and then then create a new line
-
-                //If drawing fails again, then create a new page
-
-                //Update the cursor
             }
-            // //At the cursor, check if the requested tile size fits onto the drawing area.
-            // //If yes then draw tet. If no, do not draw it and exit the loop with an error.
-
-            // if (fits(tile_iterator, cursor, )){
-
-            // }
-            // var render_location = get_render_location(tile_iterator);
-            // tile_iterator.render();
             tile_iterator = tile_iterator.next;
         }
 
@@ -358,7 +463,7 @@ $(document).ready(
     function(){
         var document1_size = {x:$('#message_area').width(), y:500}
         var document1 = new Document(document1_size);
-        document1.render();
+        document1.draw();
         
         $('.canto-letter-button').click(
             function(){
@@ -368,7 +473,7 @@ $(document).ready(
                 }else if (secondary_glyphs.indexOf(glyph_value) > -1){
                     document1.modifyTile(glyph_value);
                 }
-                document1.render();
+                document1.draw();
             }
         );
     }
