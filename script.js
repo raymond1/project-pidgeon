@@ -376,7 +376,6 @@ console.log('addTile');
     modifyTile(secondary_glyph_string){
         console.log('modifyTile');
 
-debugger;
         var last_tile = this.tiles.last;
         var glyph_image_url = this.getImageURLFromPrimaryGlyphString(secondary_glyph_string);
         if (last_tile != null){
@@ -464,6 +463,18 @@ $(document).ready(
         var document1_size = {x:$('#message_area').width(), y:500}
         var document1 = new Document(document1_size);
         document1.draw();
+        $('.options').click(
+            function(){
+                var command = $(this).attr('value');
+                if (command == "rotate writing direction"){
+
+                }else if (command == "top"){
+                }else if (command == "right"){
+                }else if (command == "bottom"){
+                }else if (command == "left"){
+                }
+            }
+        );
         
         $('.canto-letter-button').click(
             function(){

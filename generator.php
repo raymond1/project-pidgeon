@@ -27,32 +27,46 @@ function generate(){
         </li>
     </ul>
 
-    <button type='button' id='options'>Options</button>
-
-    <hr>
-    <button id="backspace-button" type="button">Backspace</button>
-    <hr>
-
-    <div class='button-group'>
-        <button class="canto-letter-button" type="button" value="space">
-            <img class="canto-letter-svg" src="./assets/cantobet-svg-files/space.svg" alt="space">
-        </button>
+    <div class='button-group'><button
+         id="backspace-button" type="button" class="backspace">Eraser</button><button
+         class="canto-letter-button small" type="button" value="space"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/space.svg" alt="space"></button
+    >
 <?php
 
-	for ($i = 1; $i <= 46; $i++){
-        if ($i >= 38 and $i <= 46){
-            $symbolclass = "small";
-        }else{
-            $symbolclass = "";
-        }
+	for ($i = 1; $i <= 37; $i++){
 ?>
-        <button class="canto-letter-button <?= $symbolclass ?>" type="button" value="<?= $i ?>">
-            <img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg">
-        </button>
-
-<?php
+<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
+><?php
     }
+
+	for ($i = 45; $i <= 46; $i++){
 ?>
+<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
+><?php
+        if ($i == 46){
+?>
+            <br>
+<?php
+        }
+    }
+	for ($i = 38; $i <= 44; $i++){
+        ?>
+<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
+><?php
+                if ($i == 46){
+        ?>
+                    <br>
+        <?php
+                }
+            }
+?><button type='button' class='options' value='left'><img src='assets/ui/left.svg' alt='Place glyph onleft'></button
+><button type='button' class='options' value='right'><img src='assets/ui/right.svg' alt='Place glyph on right'></button
+><button type='button' class='options' value='top'><img src='assets/ui/top.svg' alt='Place glyph on top'></button
+><button type='button' class='options' value='bottom'><img src='assets/ui/bottom.svg' alt='Place glyph on bottom'></button
+><button type='button' class='options' value='change writing direction'><img src='assets/ui/writing-direction.svg' alt='Change writing direction'></button
+><button type='button' class='options' value='rotate'>Rotate</button
+><button type='button' class='options' value='flip'>Flip</button>
+
     </div>
     <hr>
     <div>
