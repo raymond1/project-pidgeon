@@ -1,6 +1,6 @@
-
 var image_directory = 'assets/cantobet-svg-files/';
-
+var secondary_glyphs_top = ["38", "39", "40", "41"];
+var secondary_glyphs_bottom = ["42","43", "44"];
 class Document{
     //size.x and size.y are the size of the page in pixels
     //The only required parameter is size
@@ -21,7 +21,7 @@ class Document{
         this.pages.append(new Page());
         this.cursor = new Cursor(this, this.getDefaultCursorPosition());
     }
-    
+
     getDefaultCursorPosition(){
         var default_position = {x:0, y:0}
         if (this.primary_direction == "top to bottom"){
@@ -129,28 +129,52 @@ class Document{
                 last_tile.secondary_glyph = new Glyph(glyph_image_url, {x:25,y:25}, last_tile);
             }
             last_tile.secondary_glyph.image_url = glyph_image_url;
-            last_tile.secondary_glyph_location = "top";
-            last_tile.secondary_glyph.position = {x:last_tile.primary_glyph.width/2 - last_tile.secondary_glyph.width/2, y:0}
+            last_tile.changeSecondaryGlyphLocation(this.getDefaultSecondaryGlyphPosition(secondary_glyph_string));
 
-            last_tile.primary_glyph.position.x = 0;
-            last_tile.primary_glyph.position.y = last_tile.secondary_glyph.height;
-            last_tile.needsDrawing();
-
-            if (this.primary_direction == "top to bottom"){
-                this.cursor.move({x: this.cursor.position.x, y: last_tile.position.y + last_tile.size.y});
-            }else if (this.primary_direction == "right to left"){
-                this.cursor.move({x: last_tile.position.x - last_tile.width, y: this.cursor.position.y});
-            }
-            else if (this.primary_direction == "bottom to top"){
-                this.cursor.move({x: this.cursor.position.x, y: last_tile.position.y - last_tile.size.y});
-            }
-            else if (this.primary_direction == "left to right"){
-                this.cursor.move({x: last_tile.position.x + last_tile.width, y: this.cursor.position.y});
-            }
-
+            //update the cursor
+            this.updateCursorPosition(last_tile);
         }
     }
 
+    //Updates the cursor to end of tile
+    updateCursorPosition(tile){
+        var new_cursor_location = {x:this.cursor.position.x, y: this.cursor.position.y}
+
+        if (this.primary_direction == "top to bottom"){
+            new_cursor_location.y = tile.position.y + tile.size.y;
+        }
+        else if (this.primary_direction == "right to left"){
+            new_cursor_location.x = tile.position.x - tile.size.x;
+        }
+        else if (this.primary_direction == "bottom to top"){
+            new_cursor_location.y = tile.position.y - tile.size.y;
+        }
+        else if (this.primary_direction == "left to right"){
+            new_cursor_location.x = tile.position.x + tile.size.x;
+        }
+
+        this.cursor.move(new_cursor_location);
+    }
+
+    getDefaultSecondaryGlyphPosition(secondary_glyph_string){
+        console.log('secondary_glyph_string' + secondary_glyph_string);
+        if (Document.arrayContains(secondary_glyph_string, secondary_glyphs_top)){
+            return "top";
+        }else if (Document.arrayContains(secondary_glyph_string, secondary_glyphs_bottom)){
+            return "bottom";
+        }
+        console.log("Error, getDefaultSecondaryGlyphPosition returns no value");
+    }
+
+    //Takes in a value and an array of values and checks if needle_value is one of the values of haystack_array
+    static arrayContains(needle_value,haystack_array){
+        for (var i = 0; i < haystack_array.length; i++){
+            if (haystack_array[i] == needle_value){
+                return true;
+            }
+        }
+        return false;
+    }
     //Design notes: drawing is done hierarchically, so drawing a component will redraw subcomponents
     draw(){
         var tile_iterator = this.tiles.head;
@@ -293,18 +317,21 @@ for (var i = 38; i <= 46; i++){
 
 $(document).ready(
     function(){
-        var document1_size = {x:$('#message_area').width(), y:500}
+        var document1_size = {x:$('#message_area').width(), y:300}
         var document1 = new Document(document1_size);
         document1.draw();
         $('.options').click(
             function(){
                 var command = $(this).attr('value');
-                if (command == "rotate writing direction"){
+                if (command == "change writing direction"){
 
-                }else if (command == "top"){
-                }else if (command == "right"){
-                }else if (command == "bottom"){
-                }else if (command == "left"){
+                }else if (command.substring(0, 24) == "place secondary glyph on"){ //Move the location of the secondary glyph around
+                    if (document1.tiles.last){
+                        newSecondaryGlyphLocation = command.substring(25);
+
+                        document1.tiles.last.changeSecondaryGlyphLocation(newSecondaryGlyphLocation);
+                        document1.updateCursorPosition(document1.tiles.last);
+                    }
                 }
             }
         );
@@ -312,9 +339,9 @@ $(document).ready(
         $('.canto-letter-button').click(
             function(){
                 var glyph_value = $(this).attr('value');
-                if (primary_glyphs.indexOf(glyph_value) > -1){
+                if (primary_glyphs.indexOf(glyph_value) > -1){//If this is a primary glyph button, add a new tile
                     document1.addTile(glyph_value);
-                }else if (secondary_glyphs.indexOf(glyph_value) > -1){
+                }else if (secondary_glyphs.indexOf(glyph_value) > -1){//If this is a secondary glyph button, modify the last tile
                     document1.modifyTile(glyph_value);
                 }
                 document1.draw();

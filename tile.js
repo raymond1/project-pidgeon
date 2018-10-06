@@ -44,6 +44,8 @@ class Tile{
         else if (this.parent_document.primary_direction == "left to right"){
             rb.x = this.position.x + this.size.x;
             rt.x = this.position.x + this.size.x;
+        }else{
+            console.log('error, unrecognized primary direction in parent document');
         }
 
         if (this.parent_document.secondary_direction == "top to bottom"){
@@ -61,9 +63,36 @@ class Tile{
         else if (this.parent_document.secondary_direction == "left to right"){
             rb.x = this.position.x + this.size.x;
             rt.x = this.position.x + this.size.x;
+        }else{
+            console.log('error, unrecognized secondary direction in parent document');
         }
 
         return [lt,lb,rb,rt];
+    }
+
+    //Location can be one of top, right, bottom, left
+    changeSecondaryGlyphLocation(location){
+        this.secondary_glyph_location = location;
+        if (this.secondary_glyph){
+            if (location == 'top'){
+                this.secondary_glyph.position = {x: this.primary_glyph.width/2 - this.secondary_glyph.width/2,y: 0};
+                this.primary_glyph.position = {x: 0, y: this.secondary_glyph.size.y};
+            }else if (location == 'right'){
+                this.secondary_glyph.position = {x: this.primary_glyph.width, y: this.primary_glyph.height/2 -this.secondary_glyph.height/2};
+                this.primary_glyph.position = {x: 0, y: 0};
+            }
+            else if (location == 'bottom'){
+                this.secondary_glyph.position = {x: this.primary_glyph.width/2 - this.secondary_glyph.width/2,y: this.primary_glyph.height};
+                this.primary_glyph.position = {x: 0, y: 0};
+            }
+            else if (location == 'left'){
+                this.secondary_glyph.position = {x: 0,y: this.primary_glyph.height/2 - this.secondary_glyph.height/2};
+                this.primary_glyph.position = {x: this.secondary_glyph.width, y: 0};
+            }            
+        }
+
+        //Move to the upper left corner relative to the cursor
+        this.draw();
     }
 
     //Draws a tile and its primary and secondary glyphs
@@ -127,19 +156,19 @@ class Tile{
                 y: this.primary_glyph.size.y + this.secondary_glyph.size.y
             }
         }
-        else if (this.primary_direction == "right"){
+        else if (this.secondary_glyph_location == "right"){
             return_size = {
                 x: this.primary_glyph.size.x + this.secondary_glyph.size.x,
                 y: Math.max(this.primary_glyph.size.y, this.secondary_glyph.size.y)
             }
         }
-        else if (this.primary_direction == "bottom"){
+        else if (this.secondary_glyph_location == "bottom"){
             return_size = {
                 x: Math.max(this.primary_glyph.size.x,this.secondary_glyph.size.x),
                 y: this.primary_glyph.size.y + this.secondary_glyph.size.y
             }
         }
-        else if (this.primary_direction == "left"){
+        else if (this.secondary_glyph_location == "left"){
             return_size = {
                 x: this.primary_glyph.size.x + this.secondary_glyph.size.x,
                 y: Math.max(this.primary_glyph.size.y, this.secondary_glyph.size.y)

@@ -24,8 +24,7 @@ class Cursor{
     move(new_position){
         this.position.x = new_position.x;
         this.position.y = new_position.y;
-        this.element.style.left = this.position.x + 'px';
-        this.element.style.top = this.position.y + 'px';
+        this.draw();
     }
 
     //If there is space on the current line, move the cursor to the next space on the line
