@@ -25,4 +25,16 @@ class LinkedList{
         }
         return last;
     }
+
+    //Returns the number of elements in the linked list
+    get size(){
+        var count = 0;
+        var iterator = this.head;
+        while (iterator != null){
+            iterator = iterator.next;
+            count++;
+        }
+
+        return count;
+    }
 }

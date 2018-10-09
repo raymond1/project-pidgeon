@@ -74,4 +74,14 @@ class Cursor{
         }
         return new_position;
     }
+
+    //moves the cursor to the end of the last added item
+    update(){
+        if (this.tiles.size == 0){
+            this.move({x:0,y:0})
+        }
+        else{
+            this.move({x: this.document.tiles.last.position.x + this.document.tiles.last.size.x, y: this.document.tiles.last.position.y})
+        }
+    }
 }

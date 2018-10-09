@@ -1,13 +1,14 @@
 //A tile has its own position, independent of the glyphs that it contains.
 class Tile{
-    constructor(parent_document, primary_glyph, position, secondary_glyph, secondary_glyph_location){
-        this.parent_document = parent_document;
-        this.primary_glyph = primary_glyph;
-        this.secondary_glyph = secondary_glyph;
-        this.secondary_glyph_location = secondary_glyph_location; //"top", right, bottom, left. Refers to location of secondary glyph relative to primary glyph
+    constructor(options){
+        //options = {primary_glyph: a, position:b, secondary_glyph:c, secondary_glyph_location:d}
+        this.parent_document = options.parent_document;
+        this.primary_glyph = options.primary_glyph;
+        this.secondary_glyph = options.secondary_glyph;
+        this.secondary_glyph_location = options.secondary_glyph_location; //"top", right, bottom, left. Refers to location of secondary glyph relative to primary glyph
         this.needs_drawing = true;
-        this.position = position;
-        this.htmlElement = null;
+        this.position = options.position?options.position:{};
+        //this.htmlElement = null;
         this.padding = 0;
     }
 
@@ -25,47 +26,10 @@ class Tile{
     //Returns the corner coordinates of the tile
     getCorners(){
         //Order for corners is left top, left bottom, right bottom, right top
-        var lt = {x:this.position.x, y:this.position.y};
+        var lt = {x:this.position.x, y:this.position.y + this.size.y};
         var lb = {x:this.position.x, y:this.position.y};
-        var rb = {x:this.position.x, y:this.position.y};
-        var rt = {x:this.position.x, y:this.position.y};
-        if (this.parent_document.primary_direction == "top to bottom"){
-            lb.y = this.position.y + this.size.y;
-            rb.y = this.position.y + this.size.y;
-        }
-        else if (this.parent_document.primary_direction == "right to left"){
-            lt.x = this.position.x - this.size.x;
-            lb.x = this.position.x - this.size.x;
-        }
-        else if (this.parent_document.primary_direction == "bottom to top"){
-            lt.y = this.position.y - this.size.y;
-            rt.y = this.position.y - this.size.y;
-        }
-        else if (this.parent_document.primary_direction == "left to right"){
-            rb.x = this.position.x + this.size.x;
-            rt.x = this.position.x + this.size.x;
-        }else{
-            console.log('error, unrecognized primary direction in parent document');
-        }
-
-        if (this.parent_document.secondary_direction == "top to bottom"){
-            lb.y = this.position.y + this.size.y;
-            rb.y = this.position.y + this.size.y;
-        }
-        else if (this.parent_document.secondary_direction == "right to left"){
-            lt.x = this.position.x - this.size.x;
-            lb.x = this.position.x - this.size.x;
-        }
-        else if (this.parent_document.secondary_direction == "bottom to top"){
-            lt.y = this.position.y - this.size.y;
-            rt.y = this.position.y - this.size.y;
-        }
-        else if (this.parent_document.secondary_direction == "left to right"){
-            rb.x = this.position.x + this.size.x;
-            rt.x = this.position.x + this.size.x;
-        }else{
-            console.log('error, unrecognized secondary direction in parent document');
-        }
+        var rb = {x:this.position.x + this.size.x, y:this.position.y};
+        var rt = {x:this.position.x + this.size.x, y:this.position.y + this.size.y};
 
         return [lt,lb,rb,rt];
     }
@@ -95,9 +59,111 @@ class Tile{
         this.draw();
     }
 
+
+    getHighestIndexContainingLowestValue(input_array){
+        //var index = -1;
+        //var first_value_gotten = false;
+        var lowest_value_value = null;
+        for (var i = 0; i < input_array.length; i++){
+            if (lowest_value_value == null){
+                lowest_value_value = input_array[0];
+            }else{
+                if (input_array[i] < lowest_value_value){
+                    lowest_value_value = input_array[i]
+                }
+            }
+        }
+
+
+        //Now, with lowest_value, find the highest index that has that value
+        var lowest_value_index = -1
+        for (var i = 0; i < input_array.length; i++){
+            if (input_array[i] == lowest_value_value) lowest_value_index = i
+        }
+
+        return lowest_value_index;
+    }
+
+    static switchIndices(input_array, index_to_switch_1, index_to_switch_2){
+        var temp = input_array[index_to_switch_1]
+        input_array[index_to_switch_1] = input_array[index_to_switch_2]
+        input_array[index_to_switch_2] = temp
+    }
+
+    //Takes in a set of corner coordintates(using screen coordinate system)
+    //Ouputs the leftmost coordinates.
+    sortCornersByLeftness(corners_array){
+        var corners_array_to_be_returned = []
+        for (var i = 0; i < corners_array.length; i++){
+            corners_array_to_be_returned[i] = {x:corners_array[i].x,y:corners_array[i].y}
+        }
+
+        var sorted = false;
+        while (!sorted){
+            var sort_occurred = false;
+            for (var i = 0; i < corners_array_to_be_returned.length - 1; i++){
+                if (corners_array_to_be_returned[i].x >corners_array_to_be_returned[i+1].x){
+                    Tile.switchIndices(corners_array_to_be_returned, i, i+1)
+                    sort_occurred = true
+                }
+            }
+
+            if (!sort_occurred){
+                sorted = true;
+            }
+        }
+
+        return corners_array_to_be_returned;
+    }
+
+    //Takes in a set of corner coordintates(using screen coordinate system)
+    //Ouputs the leftmost coordinates.
+    sortCornersByTopness(corners_array){
+        var corners_array_to_be_returned = []
+        for (var i = 0; i < corners_array.length; i++){
+            corners_array_to_be_returned[i] = {x:corners_array[i].x,y:corners_array[i].y}
+        }
+
+        var sorted = false;
+        while (!sorted){
+            var sort_occurred = false;
+            for (var i = 0; i < corners_array_to_be_returned.length - 1; i++){
+                if (corners_array_to_be_returned[i].y >corners_array_to_be_returned[i+1].y){
+                    Tile.switchIndices(corners_array_to_be_returned, i, i+1)
+                    sort_occurred = true
+                }
+            }
+
+            if (!sort_occurred){
+                sorted = true;
+            }
+        }
+
+        return corners_array_to_be_returned;
+    }
+
+
+
+    //Returns the top left corner in terms of screen coordinates for the tiles
+    getScreenCoordinatesTLCorner(){
+        //if (this.parent_document.primary_direction)
+        var cornersInScreenCoordinates = []
+        var cornersInPSCoordinates = this.getCorners();
+        for (var i = 0; i < 4; i++){
+            cornersInScreenCoordinates[i] = this.parent_document.getScreenCoordinatesFromPSCoordinates(cornersInPSCoordinates[i]);
+        }
+
+        var cornersSortedByLeftness = this.sortCornersByLeftness(cornersInScreenCoordinates)
+
+        var leftCorners = cornersSortedByLeftness.slice(0,2)
+        var cornersSortedByTopness = this.sortCornersByTopness(leftCorners)
+        var upperLeftCorner = cornersSortedByTopness[0];
+        return upperLeftCorner
+    }
+
+
     //Draws a tile and its primary and secondary glyphs
     draw(){
-        var corners = this.getCorners();
         if (!this.htmlElement){
             this.htmlElement = document.createElement('div');            
             this.htmlElement.style.position = 'absolute';
@@ -109,8 +175,9 @@ class Tile{
 
             $('#message_area').append(this.htmlElement);
         }
-        this.htmlElement.style.left = corners[0].x + 'px';
-        this.htmlElement.style.top = corners[0].y + 'px';
+        var tl_corner = this.getScreenCoordinatesTLCorner();
+        this.htmlElement.style.left = tl_corner.x + 'px';
+        this.htmlElement.style.top = tl_corner.y + 'px';
         this.htmlElement.style.width = this.size.x + 'px';
         this.htmlElement.style.height = this.size.y + 'px';
         this.htmlElement.style.padding = this.padding + 'px';
