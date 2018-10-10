@@ -15,12 +15,12 @@ class Document extends DrawingArea{
         [
             {primary_direction: "left to right", secondary_direction: "top to bottom"}, //Initial direction
             {primary_direction: "top to bottom", secondary_direction: "right to left"},
-            {primary_direction: "right to left", secondary_direction: "bottom to top"},
+/*            {primary_direction: "right to left", secondary_direction: "bottom to top"},
             {primary_direction: "bottom to top", secondary_direction: "left to right"},
             {primary_direction: "left to right", secondary_direction: "bottom to top"},
             {primary_direction: "top to bottom", secondary_direction: "left to right"},
             {primary_direction: "right to left", secondary_direction: "top to bottom"},
-            {primary_direction: "bottom to top", secondary_direction: "right to left"},
+            {primary_direction: "bottom to top", secondary_direction: "right to left"},*/
         ]
 
         for (var i = 0; i < writing_directions.length; i++){
@@ -188,12 +188,12 @@ console.log('spaceAvailable')
     //point is of the form (x,y). It is given in PS coordinates
     pointWithinBounds(point){
 console.log('pointWithinBounds' + JSON.stringify(point))
-        var transformed_point = this.getScreenCoordinatesFromPSCoordinates(point)
+//        var transformed_point = this.getScreenCoordinatesFromPSCoordinates(point)
         var return_value = true;
         //If any of the four corners is out of the drawing area, then the tile does not fit on the page
-        if (transformed_point.x < 0 || transformed_point.x > this.size.x){
+        if (point.x < 0 || point.x > this.size.x){
             return_value = false;
-        } else if (transformed_point.y < 0 || transformed_point.y > this.size.y){
+        } else if (point.y < 0 || point.y > this.size.y){
             return_value = false;
         }
 
@@ -415,8 +415,8 @@ console.log('pointWithinBounds' + JSON.stringify(point))
         //Order for corners is left top, left bottom, right bottom, right top
         var lt = {x:position.x,y:position.y};
         var lb = {x:position.x,y:position.y + size.y - 1};
-        var rb = {x:position.x + size.x,y:position.y + size.y - 1};
-        var rt = {x:position.x + size.x,y:position.y};
+        var rb = {x:position.x + size.x - 1,y:position.y + size.y - 1};
+        var rt = {x:position.x + size.x - 1,y:position.y};
 /*
         if (this.primary_direction == "top to bottom"){
             lb.y = position.y + size.y;
