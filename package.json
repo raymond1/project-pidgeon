@@ -1,0 +1,29 @@
+{
+  "name": "project-pidgeon",
+  "version": "1.0.0",
+  "description": "Allows you to see Cantobets printed on the screen.",
+  "main": "index.html",
+  "dependencies": {
+    "gulp": "^3.9.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larry1010/project-pidgeon.git"
+  },
+  "keywords": [
+    "Cantonese",
+    "cantobet",
+    "typesetting",
+    "encoding"
+  ],
+  "author": "RL,LL",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/larry1010/project-pidgeon/issues"
+  },
+  "homepage": "https://github.com/larry1010/project-pidgeon#readme"
+}

@@ -1,6 +1,6 @@
 class CircularLinkedList{
     constructor(){
-        this.pointer = null;
+        this.pointer = null; //pointer refers to the current item
     }
     
     add(new_item){

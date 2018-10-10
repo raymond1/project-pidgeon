@@ -1,9 +1,11 @@
-class Cursor{
+class Cursor extends DrawingArea{
     constructor(document1, position){
+        super(document1)
         this.position = position;
         this.image_url = 'assets/ui/cursor.svg';
         this.element = null;
         this.document = document1; //The page that a cursor is on
+        this.size = {x:25,y:25}
     }
 
     draw(){
@@ -14,8 +16,11 @@ class Cursor{
             this.element.style.position = 'absolute';
             this.element.style.zIndex = 1;
         }
-        this.element.style.left = (this.position.x - 12) + 'px';
-        this.element.style.top = (this.position.y - 12) + 'px';
+
+        var offsetCursorLocation = super.getScreenCoordinatesTLCorner()//this.document.getScreenCoordinatesFromPSCoordinates({x: this.position.x,y: this.position.y})
+        //var this.getScreenCoordinatesTLCorner()
+        this.element.style.left = offsetCursorLocation.x + 'px';
+        this.element.style.top = offsetCursorLocation.y + 'px';
         this.element.style.width = '25px';
         this.element.style.height = '25px';
     }
@@ -77,7 +82,7 @@ class Cursor{
 
     //moves the cursor to the end of the last added item
     update(){
-        if (this.tiles.size == 0){
+        if (this.document.tiles.size == 0){
             this.move({x:0,y:0})
         }
         else{

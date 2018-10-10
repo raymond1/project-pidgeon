@@ -88,7 +88,8 @@ function generate(){
 
     <!-- ========================================================================================= -->
     <!-- SCRIPT     -->
-    <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
+    <script src="drawingarea.js"></script>
+    <script src="document.js"></script>
     <script src="linkedlist.js"></script>
     <script src="circularlinkedlist.js"></script>
     <script src="glyph.js"></script>
@@ -96,6 +97,7 @@ function generate(){
     <script src="page.js"></script>
     <script src="cursor.js"></script>
     <script src="script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60=" crossorigin="anonymous"></script>
 </body>
 
 </html>
