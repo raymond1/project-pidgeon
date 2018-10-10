@@ -359,6 +359,21 @@ console.log('pointWithinBounds' + JSON.stringify(point))
         this.cursor.update()
     }
 
+    modifyTile(secondary_glyph_string){
+        var last_tile = this.tiles.last;
+        var glyph_image_url = this.getImageURLFromPrimaryGlyphString(secondary_glyph_string);
+        if (last_tile != null){
+            if (!last_tile.secondary_glyph){
+                last_tile.secondary_glyph = new Glyph(glyph_image_url, {x:25,y:25}, last_tile);
+            }
+            last_tile.secondary_glyph.image_url = glyph_image_url;
+            last_tile.changeSecondaryGlyphLocation(this.getDefaultSecondaryGlyphPosition(secondary_glyph_string));
+ 
+            //update the cursor
+            this.cursor.update(); //updateCursorPosition(last_tile);
+         }
+     }
+
     getDefaultSecondaryGlyphPosition(secondary_glyph_string){
         console.log('secondary_glyph_string' + secondary_glyph_string);
         if (Document.arrayContains(secondary_glyph_string, secondary_glyphs_top)){
