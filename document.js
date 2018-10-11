@@ -15,12 +15,12 @@ class Document extends DrawingArea{
         [
             {primary_direction: "left to right", secondary_direction: "top to bottom"}, //Initial direction
             {primary_direction: "top to bottom", secondary_direction: "right to left"},
-/*            {primary_direction: "right to left", secondary_direction: "bottom to top"},
+            {primary_direction: "right to left", secondary_direction: "bottom to top"},
             {primary_direction: "bottom to top", secondary_direction: "left to right"},
             {primary_direction: "left to right", secondary_direction: "bottom to top"},
             {primary_direction: "top to bottom", secondary_direction: "left to right"},
             {primary_direction: "right to left", secondary_direction: "top to bottom"},
-            {primary_direction: "bottom to top", secondary_direction: "right to left"},*/
+            {primary_direction: "bottom to top", secondary_direction: "right to left"},
         ]
 
         for (var i = 0; i < writing_directions.length; i++){
@@ -37,6 +37,17 @@ class Document extends DrawingArea{
             return {x:this.screen_size.x, y: this.screen_size.y}
         }
     }
+
+    static getScreenSizeFromPSSize(ps_size, primary_direction){
+        if (primary_direction == "top to bottom"||primary_direction == "bottom to top"){
+            return {x:ps_size.y, y: ps_size.x}
+        }else if (primary_direction == "left to right"||primary_direction == "right to left"){
+            return {x:ps_size.x, y: ps_size.y}
+        }else{
+            console.log('Unexpected primary direction in getScreenSizeFromPSSize')
+        }
+    }
+
     //Returns whether or not tiles have already been added to the document
     get isEmpty(){
         if (this.tiles.size > 0) return false;
@@ -139,23 +150,6 @@ class Document extends DrawingArea{
         return image_directory + primary_glyph_string + '.svg';
     }
 
-    //Depending on primary_direction and secondary_direction, determine the location of the first tile
-    //Returns an object results{success:true|false} indicating whether the first tile was placed successfully or not. 
-    //Takes in a tile object that has a size, sets its position, and draws it if there is sufficient space.
-    placeTileAtOrigin(tile){
-        //Tile needs to be placed at {primary_axis: 0, secondary_axis: 0}
-        tile.position = {x:0,y:0};
-
-        //
-        //Is there sufficient space?
-        if (this.spaceAvailable(tile.size, tile.position)){
-            //There is enough space, so draw the tile at the origin
-            tile.draw();
-            return {success:true}
-        }else{
-            return {success:false}
-        }
-    }
 
     //Returns true if the tile fits onto the page
     checkFit(tile){
@@ -175,7 +169,6 @@ class Document extends DrawingArea{
     //at a given position
     //size and position are given in PS coordinates
     spaceAvailable(size,position){
-console.log('spaceAvailable')
         var corners = this.calculateRectangleCorners(size, position);
         for (var i = 0; i < 4; i++){
             if (!this.pointWithinBounds(corners[i])){
@@ -187,8 +180,6 @@ console.log('spaceAvailable')
 
     //point is of the form (x,y). It is given in PS coordinates
     pointWithinBounds(point){
-console.log('pointWithinBounds' + JSON.stringify(point))
-//        var transformed_point = this.getScreenCoordinatesFromPSCoordinates(point)
         var return_value = true;
         //If any of the four corners is out of the drawing area, then the tile does not fit on the page
         if (point.x < 0 || point.x > this.size.x){
@@ -199,6 +190,25 @@ console.log('pointWithinBounds' + JSON.stringify(point))
 
         return return_value;
     }
+
+    //Depending on primary_direction and secondary_direction, determine the location of the first tile
+    //Returns an object results{success:true|false} indicating whether the first tile was placed successfully or not. 
+    //Takes in a tile object that has a size, sets its position, and draws it if there is sufficient space.
+    placeTileAtOrigin(tile){
+        //Tile needs to be placed at {primary_axis: 0, secondary_axis: 0}
+        tile.position = {x:0,y:0};
+
+        //
+        //Is there sufficient space?
+        if (this.spaceAvailable(tile.size, tile.position)){
+            //There is enough space, so draw the tile at the origin
+            tile.draw();
+            return {success:true}
+        }else{
+            return {success:false}
+        }
+    }
+
     //Attempts to place tile onto the document. If successful, returns a results object with property success equal to true. If unsuccessful, a results object with success equal to false is returned.
     appendTile(tile){
         var results = {success: false}
@@ -217,6 +227,7 @@ console.log('pointWithinBounds' + JSON.stringify(point))
             if (space_available_results.success){
                 //add tile on same line, aligning the primary tiles and expanding line length if necessary
                 var new_position = {x:this.tiles.last.position.x + this.tiles.last.size.x, y: this.tiles.last.position.y}
+
                 tile.move(new_position)
                 results.success = true
             }else{
@@ -309,9 +320,21 @@ console.log('pointWithinBounds' + JSON.stringify(point))
     }
 
     changeWritingDirection(){
+        var old_direction = this.direction_buffer.pointer
+
         this.direction_buffer.pointer = this.direction_buffer.pointer.next
         this.size = this.getPSSizeFromScreenSize()
-        console.log(JSON.stringify(this.size))
+
+        /*
+        if (old_direction.primary_direction != new_direction.primary_direction){
+            console.log('Axis switch')
+            var tile = this.tiles.head
+            while (tile){
+                tile = tile.next()
+                //var temp = tile.             
+            }
+        }*/
+
         this.retile()
     }
 
@@ -432,41 +455,7 @@ console.log('pointWithinBounds' + JSON.stringify(point))
         var lb = {x:position.x,y:position.y + size.y - 1};
         var rb = {x:position.x + size.x - 1,y:position.y + size.y - 1};
         var rt = {x:position.x + size.x - 1,y:position.y};
-/*
-        if (this.primary_direction == "top to bottom"){
-            lb.y = position.y + size.y;
-            rb.y = position.y + size.y;
-        }
-        else if (this.primary_direction == "right to left"){
-            lt.x = position.x - size.x;
-            lb.x = position.x - size.x;
-        }
-        else if (this.primary_direction == "bottom to top"){
-            lt.y = position.y - size.y;
-            rt.y = position.y - size.y;
-        }
-        else if (this.primary_direction == "left to right"){
-            rb.x = position.x + size.x;
-            rt.x = position.x + size.x;
-        }
 
-        if (this.secondary_direction == "top to bottom"){
-            lb.y = position.y + size.y;
-            rb.y = position.y + size.y;
-        }
-        else if (this.secondary_direction == "right to left"){
-            lt.x = position.x - size.x;
-            lb.x = position.x - size.x;
-        }
-        else if (this.secondary_direction == "bottom to top"){
-            lt.y = position.y - size.y;
-            rt.y = position.y - size.y;
-        }
-        else if (this.secondary_direction == "left to right"){
-            rb.x = position.x + size.x;
-            rt.x = position.x + size.x;
-        }
-*/
         var return_value = [lt,lb,rb,rt];
         return return_value;
     }

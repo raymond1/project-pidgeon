@@ -70,7 +70,6 @@ class DrawingArea{
     getScreenCoordinatesTLCorner(){
         var cornersInScreenCoordinates = []
         var cornersInPSCoordinates = this.getCorners();
-console.log('cornersInPSCoordinates' + JSON.stringify(cornersInPSCoordinates))
         for (var i = 0; i < 4; i++){
             cornersInScreenCoordinates[i] = this.parent_document.getScreenCoordinatesFromPSCoordinates(cornersInPSCoordinates[i]);
         }

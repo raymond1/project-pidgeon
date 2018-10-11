@@ -8,6 +8,7 @@ class Tile extends DrawingArea{
         this.needs_drawing = true;
         this.position = options.position?options.position:{};
         //this.htmlElement = null;
+        this.subcomponents = []
         this.padding = 0;
     }
 
@@ -83,15 +84,23 @@ class Tile extends DrawingArea{
 
             var innerHtmlElement = document.createElement('div');
             innerHtmlElement.style.position = 'relative';
+            this.htmlElement.className = "output_tile"
+            this.htmlElement.onclick = function(){
+                console.log(JSON.stringify(this.position))
+                console.log('size' + JSON.stringify(this.size))
+            }.bind(this)
             this.htmlElement.append(innerHtmlElement);
 
             $('#message_area').append(this.htmlElement);
+
         }
         var tl_corner = this.getScreenCoordinatesTLCorner();
         this.htmlElement.style.left = tl_corner.x + 'px';
         this.htmlElement.style.top = tl_corner.y + 'px';
-        this.htmlElement.style.width = this.size.x + 'px';
-        this.htmlElement.style.height = this.size.y + 'px';
+        var screen_size = Document.getScreenSizeFromPSSize(this.size, this.parent_document.direction_buffer.pointer.primary_direction)
+        
+        this.htmlElement.style.width = screen_size.x + 'px';
+        this.htmlElement.style.height = screen_size.y + 'px';
         this.htmlElement.style.padding = this.padding + 'px';
 
 
@@ -100,9 +109,14 @@ class Tile extends DrawingArea{
         }
 
         this.primary_glyph.draw();
+
+        for (var i = 0; i < this.subcomponents.length; i++){
+            this.subcomponents[i].draw()
+        }
         this.needs_drawing = false;
     }
 
+    //Returns size in ps coordinates
     get size() {
         var size = this.calculateTileSize();
         return size;
@@ -120,6 +134,7 @@ class Tile extends DrawingArea{
 
     //A tile consists of a primary glyph and possibly a secondary glyph.
     //This function calculates the size of the entire tile altogether.
+    //The size of the tile is in screen coordinates, not PS coordinates, as the orientation of a tile does not change when the writing direction changes
     calculateTileSize(){
         if (this.secondary_glyph == null){
             var new_size = {
@@ -128,32 +143,33 @@ class Tile extends DrawingArea{
             };
             return new_size;    
         }
-        var return_size = {x:0, y:0}
+        var screen_size = {x:0, y:0}
         if (this.secondary_glyph_location == "top"){
-            return_size = {
+            screen_size = {
                 x: Math.max(this.primary_glyph.size.x,this.secondary_glyph.size.x),
                 y: this.primary_glyph.size.y + this.secondary_glyph.size.y
             }
         }
         else if (this.secondary_glyph_location == "right"){
-            return_size = {
+            screen_size = {
                 x: this.primary_glyph.size.x + this.secondary_glyph.size.x,
                 y: Math.max(this.primary_glyph.size.y, this.secondary_glyph.size.y)
             }
         }
         else if (this.secondary_glyph_location == "bottom"){
-            return_size = {
+            screen_size = {
                 x: Math.max(this.primary_glyph.size.x,this.secondary_glyph.size.x),
                 y: this.primary_glyph.size.y + this.secondary_glyph.size.y
             }
         }
         else if (this.secondary_glyph_location == "left"){
-            return_size = {
+            screen_size = {
                 x: this.primary_glyph.size.x + this.secondary_glyph.size.x,
                 y: Math.max(this.primary_glyph.size.y, this.secondary_glyph.size.y)
             }
         }
-        return return_size;
+        var ps_size = Document.convertScreenSizeToPSSize(screen_size, this.parent_document.direction_buffer.pointer.primary_direction, this.parent_document.direction_buffer.pointer.secondary_direction)
+        return ps_size;
     }
 
     move(position){
