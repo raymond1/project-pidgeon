@@ -46,11 +46,10 @@ $(document).ready(
             function(){
                 var glyph_value = $(this).attr('value');
                 if (primary_glyphs.indexOf(glyph_value) > -1){//If this is a primary glyph button, add a new tile
-                    document1.addTile(glyph_value);
-                }else if (secondary_glyphs.indexOf(glyph_value) > -1){//If this is a secondary glyph button, modify the last tile
-                    document1.modifyTile(glyph_value);
+                    document1.addPrimaryTile(glyph_value);
+                }else if (secondary_glyphs.indexOf(glyph_value) > -1){//modify the last tile to add the secondary glyph
+                    document1.modifyTile(glyph_value, document1.tiles.last);
                 }
-                document1.draw();
             }
         );
 

@@ -83,10 +83,10 @@ class DrawingArea{
     }
     getCorners(){
         //Order for corners is left top, left bottom, right bottom, right top
-        var lt = {x:this.position.x, y:this.position.y + this.size.y};
+        var lt = {x:this.position.x, y:this.position.y + this.size.y - 1};
         var lb = {x:this.position.x, y:this.position.y};
-        var rb = {x:this.position.x + this.size.x, y:this.position.y};
-        var rt = {x:this.position.x + this.size.x, y:this.position.y + this.size.y};
+        var rb = {x:this.position.x + this.size.x - 1, y:this.position.y};
+        var rt = {x:this.position.x + this.size.x - 1, y:this.position.y + this.size.y - 1};
 
         return [lt,lb,rb,rt];
     }

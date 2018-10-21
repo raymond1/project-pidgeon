@@ -5,12 +5,37 @@ class Tile extends DrawingArea{
         this.primary_glyph = options.primary_glyph;
         this.secondary_glyph = options.secondary_glyph;
         this.secondary_glyph_location = options.secondary_glyph_location; //"top", right, bottom, left. Refers to location of secondary glyph relative to primary glyph
-        this.needs_drawing = true;
+        this.needs_drawing = options.needs_drawing?options.needs_drawing:true;
         this.position = options.position?options.position:{};
-        //this.htmlElement = null;
-        this.subcomponents = []
-        this.padding = 0;
+        this.subcomponents = options.subcomponents?options.subcomponents:[]
+        this.padding = options.padding?options.padding:0;
+        this.htmlElement = options.htmlElement?options.htmlElement:null;
+        this.line_number = options.line_number?options.line_number: 0;
     }
+
+    getBaselineHeight(){
+        var distance_from_tile_top_to_primary_glyph_top = Document.convertScreenSizeToPSSize(this.primary_glyph.position, this.parent_document.direction_buffer.pointer.primary_direction, this.parent_document.direction_buffer.pointer.secondary_direction).y
+        var return_value = this.size.y + distance_from_tile_top_to_primary_glyph_top - this.primary_glyph.size.y
+        return return_value
+    }
+
+    shallowClone(){
+        var new_tile = new Tile(
+            {
+                parent_document: this.parent_document, 
+                primary_glyph:this.primary_glyph, 
+                secondary_glyph:this.secondary_glyph,
+                needs_drawing:this.needs_drawing,
+                position:this.position, 
+                subcomponents:this.subcomponents,
+                padding:this.padding,
+                htmlElement:this.htmlElement
+            }
+        )
+
+        return new_tile
+    }
+
 
     //Marks the tile as requiring a redraw
     needsDrawing(){
@@ -20,6 +45,7 @@ class Tile extends DrawingArea{
         if (this.secondary_glyph){
             this.secondary_glyph.needs_drawing = true;
         }
+
         this.needs_drawing = true;
     }
 
@@ -48,7 +74,8 @@ class Tile extends DrawingArea{
         this.draw();
     }
 
-
+    //Given an array of numeric values, finds the lowest value in the array
+    //Returns the lowest index where that value can be found
     getHighestIndexContainingLowestValue(input_array){
         //var index = -1;
         //var first_value_gotten = false;
@@ -73,47 +100,50 @@ class Tile extends DrawingArea{
         return lowest_value_index;
     }
 
-
+    undraw(){
+        $(this.htmlElement).remove();        
+    }
 
     //Draws a tile and its primary and secondary glyphs
     draw(){
-        if (!this.htmlElement){
-            this.htmlElement = document.createElement('div');            
-            this.htmlElement.style.position = 'absolute';
-            this.htmlElement.style.backgroundColor = '#ffe';
+        if (this.needs_drawing){
+            if (!this.htmlElement){
+                this.htmlElement = document.createElement('div');            
+                this.htmlElement.style.position = 'absolute';
+                this.htmlElement.style.backgroundColor = '#ffe';
 
-            var innerHtmlElement = document.createElement('div');
-            innerHtmlElement.style.position = 'relative';
-            this.htmlElement.className = "output_tile"
-            this.htmlElement.onclick = function(){
-                console.log(JSON.stringify(this.position))
-                console.log('size' + JSON.stringify(this.size))
-            }.bind(this)
-            this.htmlElement.append(innerHtmlElement);
+                var innerHtmlElement = document.createElement('div');
+                innerHtmlElement.style.position = 'relative';
+                this.htmlElement.className = "output_tile"
+                this.htmlElement.onclick = function(){
+                    console.log(JSON.stringify(this.position))
+                    console.log('size' + JSON.stringify(this.size))
+                }.bind(this)
+                this.htmlElement.append(innerHtmlElement);
 
-            $('#message_area').append(this.htmlElement);
+                $('#message_area').append(this.htmlElement);
+            }
+            var tl_corner = this.getScreenCoordinatesTLCorner();
+            this.htmlElement.style.left = tl_corner.x + 'px';
+            this.htmlElement.style.top = tl_corner.y + 'px';
+            var screen_size = Document.getScreenSizeFromPSSize(this.size, this.parent_document.direction_buffer.pointer.primary_direction)
+            
+            this.htmlElement.style.width = screen_size.x + 'px';
+            this.htmlElement.style.height = screen_size.y + 'px';
+            this.htmlElement.style.padding = this.padding + 'px';
 
+
+            if (this.secondary_glyph){
+                this.secondary_glyph.draw();
+            }
+
+            this.primary_glyph.draw();
+
+            for (var i = 0; i < this.subcomponents.length; i++){
+                this.subcomponents[i].draw()
+            }
+            this.needs_drawing = false;
         }
-        var tl_corner = this.getScreenCoordinatesTLCorner();
-        this.htmlElement.style.left = tl_corner.x + 'px';
-        this.htmlElement.style.top = tl_corner.y + 'px';
-        var screen_size = Document.getScreenSizeFromPSSize(this.size, this.parent_document.direction_buffer.pointer.primary_direction)
-        
-        this.htmlElement.style.width = screen_size.x + 'px';
-        this.htmlElement.style.height = screen_size.y + 'px';
-        this.htmlElement.style.padding = this.padding + 'px';
-
-
-        if (this.secondary_glyph){
-            this.secondary_glyph.draw();
-        }
-
-        this.primary_glyph.draw();
-
-        for (var i = 0; i < this.subcomponents.length; i++){
-            this.subcomponents[i].draw()
-        }
-        this.needs_drawing = false;
     }
 
     //Returns size in ps coordinates
@@ -122,11 +152,13 @@ class Tile extends DrawingArea{
         return size;
     }
 
+    //Returns width of the tile in PS coordinates
     get width(){
         var size = this.calculateTileSize();
         return size.x;
     }
 
+    //Returns height of the tile in PS coordinates
     get height(){
         var size = this.calculateTileSize();
         return size.y;
@@ -134,7 +166,7 @@ class Tile extends DrawingArea{
 
     //A tile consists of a primary glyph and possibly a secondary glyph.
     //This function calculates the size of the entire tile altogether.
-    //The size of the tile is in screen coordinates, not PS coordinates, as the orientation of a tile does not change when the writing direction changes
+    //Size is returned in PS coordinates
     calculateTileSize(){
         if (this.secondary_glyph == null){
             var new_size = {
