@@ -106,7 +106,6 @@ class Tile extends DrawingArea{
 
     //Draws a tile and its primary and secondary glyphs
     draw(){
-        if (this.needs_drawing){
             if (!this.htmlElement){
                 this.htmlElement = document.createElement('div');            
                 this.htmlElement.style.position = 'absolute';
@@ -143,7 +142,6 @@ class Tile extends DrawingArea{
                 this.subcomponents[i].draw()
             }
             this.needs_drawing = false;
-        }
     }
 
     //Returns size in ps coordinates

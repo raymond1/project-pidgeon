@@ -645,7 +645,7 @@ existing_tile.primary_glyph.size.y + 1
             }
             tile_iterator = tile_iterator.next;
         }
-        this.cursor.draw();
+        this.cursor.update();
     }
 
 
