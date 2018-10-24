@@ -12,6 +12,8 @@ class Cursor extends DrawingArea{
         if (this.element == null){
             this.element = document.createElement('img');
             $('#message_area').append(this.element);
+            this.element.style.width = '25px';
+            this.element.style.height = '25px';
             this.element.src = this.image_url;
             this.element.style.position = 'absolute';
             this.element.style.zIndex = 1;
@@ -21,8 +23,7 @@ class Cursor extends DrawingArea{
         //var this.getScreenCoordinatesTLCorner()
         this.element.style.left = offsetCursorLocation.x + 'px';
         this.element.style.top = offsetCursorLocation.y + 'px';
-        this.element.style.width = '25px';
-        this.element.style.height = '25px';
+
     }
 
     //Moving the cursor draws the cursor

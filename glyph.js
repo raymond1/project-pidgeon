@@ -8,9 +8,8 @@ class Glyph{
         this.next = null;
         this.padding = 5;
         this.image_url = image_url;
-        this.needs_drawing = true;
         this.htmlElement = null;
-        this.parent_tile = parent_tile;
+        this.parent = parent_tile;
         this.needs_drawing = true;
     }
 
@@ -30,7 +29,7 @@ class Glyph{
 
         if (!this.htmlElement){
             this.htmlElement = document.createElement('img');
-            $(this.parent_tile.htmlElement).children('div').append(this.htmlElement);
+            $(this.parent.htmlElement).children('div').append(this.htmlElement);
         }
         this.htmlElement.style.width = this.width + 'px';
         this.htmlElement.style.height = this.height + 'px';

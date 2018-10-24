@@ -283,6 +283,9 @@ y_distance_from_tile_top_to_primary_glyph_top -
 existing_tile.primary_glyph.size.y + 1
             - distance_from_primary_glyph_to_tile_bottom
 
+        if (isNaN(x)||isNaN(y)){
+            console.log('Error. getAlignedPosition returns NaN')            
+        }
         return {x:x,y:y}
     }
 
@@ -329,6 +332,7 @@ existing_tile.primary_glyph.size.y + 1
             tile.move({x:tile.position.x,y:height})
         }
     }
+
     //If existing_tile is null, append to head
     //new_tile is placed after existing_tile if existing_tile is provided
     //If no existing_tile is provided, new_tile is appended to the end
@@ -341,70 +345,70 @@ existing_tile.primary_glyph.size.y + 1
             if (this.spaceAvailable(new_tile.size,{x:0,y:0})){
                 new_tile.move({x:0,y:0})
                 this.tiles.append(new_tile)
-                return {success: true}
-            }
-            else{
-                return {success:false}
+                results.success = true
             }
         }
-
-        //Try the same line. If space is not available, try the next line.
-        var space_available_results = this.spaceAvailableOnSameLine(existing_tile, new_tile);
-        if (space_available_results.success){
-            //add new_tile on same line, aligning the primary tiles and expanding line length if necessary
-            var new_position
-            if (!existing_tile){
-                new_position = {x:0,y:0}
-                new_tile.line_number = 0
-            }
-            else{
-                new_tile.line_number = existing_tile.line_number
-                new_position = {x:existing_tile.position.x + existing_tile.size.x, y: existing_tile.position.y}
-            }
-
-            new_tile.move(new_position)
-            results.success = true
-        }else{
-            console.log('not enough space')
-            if (space_available_results.failure_reasons.not_enough_primary_space){
-                //if there is not enough primary space, make a new line
-
-                console.log('not enough primary space')
-                results.success = this.addTileToNewLine(existing_tile,new_tile)
-            }else if (space_available_results.failure_reasons.not_enough_secondary_space){
-                //if there is not enough secondary space, 
-                console.log('not enough secondary space')
-
-                //existing line bounding box in PS coordinates
-                var line_bounding_box = this.getLineBoundingBox(existing_tile.line_number)
-
-
-                //if the height of the bounding box were to be increased, how much would it need to be increased at the top? At the bottom?
-                var bounding_box_top_and_bottom_increases = this.getRequiredLineBoundingBoxIncreases(line_bounding_box, existing_tile, new_tile)
-                var top_increase = bounding_box_top_and_bottom_increases.top
-                var bottom_increase = bounding_box_top_and_bottom_increases.bottom
-
-                var line_bounding_box_plus_extensions = {}
-                line_bounding_box_plus_extensions.size = {x:line_bounding_box.size.x, y: line_bounding_box.size.y + top_increase + bottom_increase};
-                line_bounding_box_plus_extensions.position = {x:line_bounding_box.position.x, y: line_bounding_box.position.y}
-
-                if (this.spaceAvailable(line_bounding_box_plus_extensions.position,line_bounding_box_plus_extensions.size)){
-                    //There is enough space. The question is where to put the tiles
-                    var tiles_on_line = this.getAllTilesOnLine(existing_tile.line_number)
-
-                    var baseline = this.getBaselineHeight(tiles_on_line)
-                    this.putTilesOnBaseline(tiles_on_line,baseline, line_bounding_box_plus_extensions.position)
-                    results.success = true
-
-                }else{
-                    results.success = false
+        else{
+            //Try the same line. If space is not available, try the next line.
+            var space_available_results = this.spaceAvailableOnSameLine(existing_tile, new_tile);
+            if (space_available_results.success){
+                //add new_tile on same line, aligning the primary tiles and expanding line length if necessary
+                var new_position
+                if (!existing_tile){
+                    new_position = {x:0,y:0}
+                    new_tile.line_number = 0
                 }
+                else{
+                    new_tile.line_number = existing_tile.line_number
+                    new_position = {x:existing_tile.position.x + existing_tile.size.x, y: existing_tile.position.y}
+                }
+
+                new_tile.move(new_position)
+                results.success = true
+            }else{
+                console.log('not enough space')
+                if (space_available_results.failure_reasons.not_enough_primary_space){
+                    //if there is not enough primary space, make a new line
+
+                    console.log('not enough primary space')
+                    results.success = this.addTileToNewLine(existing_tile,new_tile)
+                }else if (space_available_results.failure_reasons.not_enough_secondary_space){
+                    //if there is not enough secondary space, 
+                    console.log('not enough secondary space')
+
+                    //existing line bounding box in PS coordinates
+                    var line_bounding_box = this.getLineBoundingBox(existing_tile.line_number)
+
+
+                    //if the height of the bounding box were to be increased, how much would it need to be increased at the top? At the bottom?
+                    var bounding_box_top_and_bottom_increases = this.getRequiredLineBoundingBoxIncreases(line_bounding_box, existing_tile, new_tile)
+                    var top_increase = bounding_box_top_and_bottom_increases.top
+                    var bottom_increase = bounding_box_top_and_bottom_increases.bottom
+
+                    var line_bounding_box_plus_extensions = {}
+                    line_bounding_box_plus_extensions.size = {x:line_bounding_box.size.x, y: line_bounding_box.size.y + top_increase + bottom_increase};
+                    line_bounding_box_plus_extensions.position = {x:line_bounding_box.position.x, y: line_bounding_box.position.y}
+
+                    if (this.spaceAvailable(line_bounding_box_plus_extensions.position,line_bounding_box_plus_extensions.size)){
+                        //There is enough space. The question is where to put the tiles
+                        var tiles_on_line = this.getAllTilesOnLine(existing_tile.line_number)
+
+                        var baseline = this.getBaselineHeight(tiles_on_line)
+                        this.putTilesOnBaseline(tiles_on_line,baseline, line_bounding_box_plus_extensions.position)
+                        results.success = true
+
+                    }else{
+                        results.success = false
+                    }
+                }            
             }
         }
+
 
         //Adds the tile to the model
         if (results.success){
             this.tiles.insertAfter(new_tile, existing_tile)
+            this.cursor.update()
         }
         return results;
     }
@@ -566,25 +570,17 @@ existing_tile.primary_glyph.size.y + 1
     
     //Takes in a glyph string(a unique string corresponding to each one of the glyphs) and puts a tile with that glyph on the page.
     //This function is executed when the user clicks on a button to add a new primary glyph
-    //Returns the tile that was added
     addPrimaryTile(primary_glyph_string){
+
         //1)First create a new tile with the correct glyph so that it has a calculatable size
         var new_glyph =
         new Glyph(
             this.getImageURLFromPrimaryGlyphString(primary_glyph_string),
             {x:50,y:50} //Primary tile size
         );
-
         var new_tile = new Tile({primary_glyph:new_glyph, parent_document: this});
-        new_glyph.parent_tile = new_tile;
-        var results = this.insertTile(new_tile,this.tiles.last);
-        if (!results.success){
-            console.log('Error placing tile');
-        }
-        else{
-            this.cursor.update()
-            return new_tile
-        }
+
+        this.insertTile(new_tile,this.tiles.last);
     }
 
     modifyTile(secondary_glyph_string,tile_to_modify){
@@ -640,9 +636,7 @@ existing_tile.primary_glyph.size.y + 1
     draw(){
         var tile_iterator = this.tiles.head;
         while (tile_iterator != null){
-            if (tile_iterator.needs_drawing){
-                tile_iterator.draw();
-            }
+            tile_iterator.draw();
             tile_iterator = tile_iterator.next;
         }
         this.cursor.update();

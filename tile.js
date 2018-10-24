@@ -2,15 +2,19 @@
 class Tile extends DrawingArea{
     constructor(options){
         super(options.parent_document) //This allows inheriting the functions from the DrawingArea class
-        this.primary_glyph = options.primary_glyph;
+        this.primary_glyph = options.primary_glyph?options.primary_glyph:undefined;
+        if(this.primary_glyph){
+            this.primary_glyph.parent = this
+        }
         this.secondary_glyph = options.secondary_glyph;
         this.secondary_glyph_location = options.secondary_glyph_location; //"top", right, bottom, left. Refers to location of secondary glyph relative to primary glyph
         this.needs_drawing = options.needs_drawing?options.needs_drawing:true;
-        this.position = options.position?options.position:{};
+        this.position = options.position?options.position:{x:0,y:0};
         this.subcomponents = options.subcomponents?options.subcomponents:[]
         this.padding = options.padding?options.padding:0;
         this.htmlElement = options.htmlElement?options.htmlElement:null;
         this.line_number = options.line_number?options.line_number: 0;
+        this.draw()
     }
 
     getBaselineHeight(){
