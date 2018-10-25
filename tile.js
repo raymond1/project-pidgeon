@@ -14,7 +14,6 @@ class Tile extends DrawingArea{
         this.padding = options.padding?options.padding:0;
         this.htmlElement = options.htmlElement?options.htmlElement:null;
         this.line_number = options.line_number?options.line_number: 0;
-        this.draw()
     }
 
     getBaselineHeight(){
@@ -148,28 +147,8 @@ class Tile extends DrawingArea{
             this.needs_drawing = false;
     }
 
-    //Returns size in ps coordinates
-    get size() {
-        var size = this.calculateTileSize();
-        return size;
-    }
-
-    //Returns width of the tile in PS coordinates
-    get width(){
-        var size = this.calculateTileSize();
-        return size.x;
-    }
-
-    //Returns height of the tile in PS coordinates
-    get height(){
-        var size = this.calculateTileSize();
-        return size.y;
-    }
-
-    //A tile consists of a primary glyph and possibly a secondary glyph.
-    //This function calculates the size of the entire tile altogether.
-    //Size is returned in PS coordinates
-    calculateTileSize(){
+    //Returns the size of a tile in screen coordinates
+    get screen_size(){
         if (this.secondary_glyph == null){
             var new_size = {
                 x:this.primary_glyph.size.x,
@@ -202,6 +181,36 @@ class Tile extends DrawingArea{
                 y: Math.max(this.primary_glyph.size.y, this.secondary_glyph.size.y)
             }
         }
+        return screen_size
+    }
+
+    //returns top left corner in screen coordinates
+    get screen_coordinates(){
+        return this.getScreenCoordinatesTLCorner()
+    }
+    //Returns size in ps coordinates
+    get size() {
+        var size = this.calculateTileSize();
+        return size;
+    }
+
+    //Returns width of the tile in PS coordinates
+    get width(){
+        var size = this.calculateTileSize();
+        return size.x;
+    }
+
+    //Returns height of the tile in PS coordinates
+    get height(){
+        var size = this.calculateTileSize();
+        return size.y;
+    }
+
+    //A tile consists of a primary glyph and possibly a secondary glyph.
+    //This function calculates the size of the entire tile altogether.
+    //Size is returned in PS coordinates
+    calculateTileSize(){
+        var screen_size = this.screen_size
         var ps_size = Document.convertScreenSizeToPSSize(screen_size, this.parent_document.direction_buffer.pointer.primary_direction, this.parent_document.direction_buffer.pointer.secondary_direction)
         return ps_size;
     }
