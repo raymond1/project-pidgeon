@@ -2,8 +2,8 @@
 
 class DrawingArea{
 	    //Returns the corner coordinates of the tile
-	constructor(parent_document){
-        this.parent_document = parent_document;
+	constructor(parent){
+        this.parent = parent;
 	}
 
     static switchIndices(input_array, index_to_switch_1, index_to_switch_2){
@@ -71,7 +71,7 @@ class DrawingArea{
         var cornersInScreenCoordinates = []
         var cornersInPSCoordinates = this.getCorners();
         for (var i = 0; i < 4; i++){
-            cornersInScreenCoordinates[i] = this.parent_document.getScreenCoordinatesFromPSCoordinates(cornersInPSCoordinates[i]);
+            cornersInScreenCoordinates[i] = this.parent.getScreenCoordinatesFromPSCoordinates(cornersInPSCoordinates[i]);
         }
 
         var cornersSortedByLeftness = this.sortCornersByLeftness(cornersInScreenCoordinates)

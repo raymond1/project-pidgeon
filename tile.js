@@ -1,7 +1,7 @@
 //A tile has its own position, independent of the glyphs that it contains.
 class Tile extends DrawingArea{
     constructor(options){
-        super(options.parent_document) //This allows inheriting the functions from the DrawingArea class
+        super(options.parent) //This allows inheriting the functions from the DrawingArea class
         this.primary_glyph = options.primary_glyph?options.primary_glyph:undefined;
         if(this.primary_glyph){
             this.primary_glyph.parent = this
@@ -17,7 +17,7 @@ class Tile extends DrawingArea{
     }
 
     getBaselineHeight(){
-        var distance_from_tile_top_to_primary_glyph_top = Document.convertScreenSizeToPSSize(this.primary_glyph.position, this.parent_document.direction_buffer.pointer.primary_direction, this.parent_document.direction_buffer.pointer.secondary_direction).y
+        var distance_from_tile_top_to_primary_glyph_top = Document.convertScreenSizeToPSSize(this.primary_glyph.position, this.parent.direction_buffer.pointer.primary_direction, this.parent.direction_buffer.pointer.secondary_direction).y
         var return_value = this.size.y + distance_from_tile_top_to_primary_glyph_top - this.primary_glyph.size.y
         return return_value
     }
@@ -25,7 +25,7 @@ class Tile extends DrawingArea{
     shallowClone(){
         var new_tile = new Tile(
             {
-                parent_document: this.parent_document, 
+                parent: this.parent, 
                 primary_glyph:this.primary_glyph, 
                 secondary_glyph:this.secondary_glyph,
                 needs_drawing:this.needs_drawing,
@@ -128,7 +128,7 @@ class Tile extends DrawingArea{
             var tl_corner = this.getScreenCoordinatesTLCorner();
             this.htmlElement.style.left = tl_corner.x + 'px';
             this.htmlElement.style.top = tl_corner.y + 'px';
-            var screen_size = Document.getScreenSizeFromPSSize(this.size, this.parent_document.direction_buffer.pointer.primary_direction)
+            var screen_size = Document.getScreenSizeFromPSSize(this.size, this.parent.direction_buffer.pointer.primary_direction)
             
             this.htmlElement.style.width = screen_size.x + 'px';
             this.htmlElement.style.height = screen_size.y + 'px';
@@ -188,6 +188,17 @@ class Tile extends DrawingArea{
     get screen_coordinates(){
         return this.getScreenCoordinatesTLCorner()
     }
+
+    //Given a set of screen coordinates, saves the corresponding ps coordinates
+    set screen_coordinates(position){
+        this.position = Document.convertScreenCoordinatesToPSCoordinates(position, this.parent.direction_buffer.pointer)
+        if (isNaN(this.position.x))
+        {
+            console.log('position is not a number')
+            debugger
+        }
+    }
+
     //Returns size in ps coordinates
     get size() {
         var size = this.calculateTileSize();
@@ -211,13 +222,24 @@ class Tile extends DrawingArea{
     //Size is returned in PS coordinates
     calculateTileSize(){
         var screen_size = this.screen_size
-        var ps_size = Document.convertScreenSizeToPSSize(screen_size, this.parent_document.direction_buffer.pointer.primary_direction, this.parent_document.direction_buffer.pointer.secondary_direction)
+        var ps_size = Document.convertScreenSizeToPSSize(screen_size, 
+            this.parent.direction_buffer.pointer.primary_direction, 
+            this.parent.direction_buffer.pointer.secondary_direction)
         return ps_size;
     }
 
+    //Moves a tile to PS coordinates position
     move(position){
         this.position.x = position.x;
         this.position.y = position.y;
-        this.draw();
+    }
+
+    //Given the top-left coordinates where a tile is to be moved onto the screen, calculates the cooresponding ps coordinates and moves the tile there
+    //Moves a tile to a screen coordinates position
+    moveScreen(position){
+        console.log(position)
+        var screen_coordinates = Document.convertScreenCoordinatesToPSCoordinates(position, this.parent.direction_buffer.pointer)
+        this.position.x = screen_coordinates.x
+        this.position.y = screen_coordinates.y
     }
 }

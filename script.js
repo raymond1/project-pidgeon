@@ -36,7 +36,7 @@ $(document).ready(
                         newSecondaryGlyphLocation = command.substring(25);
 
                         document1.tiles.last.changeSecondaryGlyphLocation(newSecondaryGlyphLocation);
-                        document1.draw()
+                        document1.retile()
                     }
                 }
             }
