@@ -189,6 +189,12 @@ class Tile extends DrawingArea{
         return this.getScreenCoordinatesTLCorner()
     }
 
+    //returns top left corner in screen coordinates
+    get screen_position(){
+        return this.screen_coordinates
+    }
+
+
     //Given a set of screen coordinates, saves the corresponding ps coordinates
     set screen_coordinates(position){
         this.position = Document.convertScreenCoordinatesToPSCoordinates(position, this.parent.direction_buffer.pointer, this.parent.screen_size)

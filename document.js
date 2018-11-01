@@ -310,7 +310,7 @@ class Document extends DrawingArea{
 
     //Takes in an array of sizes and positions and calculates the smallest rectangle and size object that will contain all the the rectangles passed in the array
     //Calculations are done in PS coordinates
-    //Returns an object with size and position properties
+    //Returns an object with size and position properties in ps coordinates
     //position is on lower-left corner
     areaGlom(tiles_array){
         var return_value = {}
@@ -345,7 +345,7 @@ class Document extends DrawingArea{
 
     areaGlomScreen(tiles_array){
         var ps_area_glom = this.areaGlom(tiles_array)
-        return Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(ps_area_glom, this.direction_buffer.pointer)
+        return Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(ps_area_glom, this.direction_buffer.pointer, this.screen_size)
     }
 
     //Takes in a tile and a size{x,y} representing the size of the new tile t, and determines whether or not the new tile can be added to the same line as the preceding tile
@@ -524,40 +524,38 @@ class Document extends DrawingArea{
         return v1.x * v2.x + v1.y * v2.y
     }
 
-    //screen coordinates if of the form {x,y}. larger x on right, smaller x on left. Larger y on bottom, smaller y on top.
+    //coordinates of the form {x,y}. Screen coordinates.larger x on right, smaller x on left. Larger y on bottom, smaller y on top.
     //direction_parameters is of a form similar to {primary_direction: "top to bottom", secondary_direction: "left to right"}
     //screen_size is a size of the document drawing area, given in screen coordinates
-    static convertScreenCoordinatesToPSCoordinates(screen_coordinates, direction_parameters, screen_size){
+    static convertScreenCoordinatesToPSCoordinates(coordinates, direction_parameters, screen_size){
         var p
         var s
 
-        if (!screen_size){
-            debugger
-        }
+
         if (direction_parameters.primary_direction == "top to bottom"){
-            p = screen_coordinates.y
+            p = coordinates.y
         }
         else if (direction_parameters.primary_direction == "right to left"){
-            p = screen_size.x - 1 - screen_coordinates.x
+            p = screen_size.x - coordinates.x
         }
         else if (direction_parameters.primary_direction == "bottom to top"){
-            p = screen_size.y - 1 - screen_coordinates.y
+            p = screen_size.y - coordinates.y
         }
         else if (direction_parameters.primary_direction == "left to right"){
-            p = screen_coordinates.x
+            p = coordinates.x
         }
 
         if (direction_parameters.secondary_direction == "top to bottom"){
-            s = screen_coordinates.y
+            s = coordinates.y
         }
         else if (direction_parameters.secondary_direction == "right to left"){
-            s = screen_size.x - 1 - screen_coordinates.x
+            s = screen_size.x - 1 - coordinates.x
         }
         else if (direction_parameters.secondary_direction == "bottom to top"){
-            s = screen_size.y - 1 - screen_coordinates.y
+            s = screen_size.y - 1 - coordinates.y
         }
         else if (direction_parameters.secondary_direction == "left to right"){
-            s = screen_coordinates.x
+            s = coordinates.x
         }
 
         return {x:p,y:s}
@@ -830,12 +828,21 @@ class Document extends DrawingArea{
                 var line_bounding_box = this.getLineBoundingBox(this.tiles.last.line_number)
                 var height_required = this.getSecondarySpaceRequired(new_tile)
                 line_bounding_box.size.y = height_required
+
+                //If line expansion fits onto screen, then add the tile
                 if (Document.isBoundingBoxInBoundingBox(line_bounding_box, this)){
                     //Add the new tile to the current line, and retile the current line if necessary.
                     new_tile.line_number = this.tiles.last.line_number
                     this.tiles.append(new_tile)
                     var tiles_on_current_line = this.getAllTilesOnLine(this.tiles.last.line_number)
-                    this.retileAsALine(tiles_on_current_line, Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(line_bounding_box, this.direction_buffer.pointer))
+
+                    var screen_coordinates_bounding_box_for_new_line = Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(line_bounding_box, this.direction_buffer.pointer, this.screen_size)
+                    if (screen_coordinates_bounding_box_for_new_line.position.x < 0){
+                        debugger
+                        Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(line_bounding_box, this.direction_buffer.pointer, this.screen_size)
+                    }
+
+                    this.retileAsALine(tiles_on_current_line, screen_coordinates_bounding_box_for_new_line)
                     this.draw()
                 }else{
                     console.log('Not enough secondary space')
@@ -863,9 +870,6 @@ class Document extends DrawingArea{
         }
         return false
     }
-    spaceAvailableOnNextLine(){
-
-    }
 
     //Removes a tile from the end of the tiles and returns the removed tile
     removeTileFromEnd(){
@@ -875,40 +879,54 @@ class Document extends DrawingArea{
     }
 
     //Given a bounding box {size:{x,y}, position:{x,y}} given in ps coordinates, convert the box into screen coordinates
-    static convertPSBoundingBoxToScreenCoordinatesBoundingBox(bounding_box, direction_parameters){
+    //screen_size is the size in screen coordinates of the screen
+    static convertPSBoundingBoxToScreenCoordinatesBoundingBox(bounding_box, direction_parameters, screen_size){
+        var size = Document.getScreenSizeFromPSSize(bounding_box.size, direction_parameters.primary_direction)
+        var position = Document.convertPSCoordinatesToScreenCoordinates(bounding_box.position, direction_parameters, screen_size)
         return {
-            size: Document.getScreenSizeFromPSSize(bounding_box.size, direction_parameters.primary_direction),
-            position: Document.convertPSCoordinatesToScreenCoordinates(bounding_box.position, direction_parameters)
+            size: size,
+            position: position
+        }
+    }
+
+    //Given a bounding box in screen coordinates({size:{x,y}, position:{x,y}}), returns the corresponding ps bounding box
+    convertScreenCoordinatesBoundingBoxToPSBoundingBox(bounding_box){
+        var size = Document.convertScreenSizeToPSSize(bounding_box.size, this.direction_buffer.pointer.primary_direction, this.direction_buffer.pointer.secondary_direction)
+        var position = Document.convertScreenCoordinatesToPSCoordinates(bounding_box.position, this.direction_buffer.pointer, this.screen_size)
+        return {
+            size: size,
+            position: position
         }
     }
 
     //given a set of ps coordinates {x,y} and a set of direction parameters(i.e{primary_direction: "top to bottom", secondary_direction: "left to right"}), converts them into screen coordinates
-    static convertPSCoordinatesToScreenCoordinates(ps_coordinates, direction_parameters){
+    //Size of the screen is given in screen coordinates in the parameter screen_size
+    static convertPSCoordinatesToScreenCoordinates(ps_coordinates, direction_parameters, screen_size){
         var screen_coordinates = {}
         if (direction_parameters.primary_direction == "top to bottom"){
             screen_coordinates.y = ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "right to left"){
-            screen_coordinates.x = -1 * ps_coordinates.x
+            screen_coordinates.x = screen_size.x - ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "bottom to top"){
-            screen_coordinates.y = -1 * ps_coordinates.x
+            screen_coordinates.y = screen_size.y - ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "left to right"){
-            screen_coordinates.x = -1 * ps_coordinates.x
+            screen_coordinates.x = ps_coordinates.x
         }
 
         if (direction_parameters.secondary_direction == "top to bottom"){
             screen_coordinates.y = ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "right to left"){
-            screen_coordinates.x = -1 * ps_coordinates.y
+            screen_coordinates.x = screen_size.x - ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "bottom to top"){
-            screen_coordinates.y = -1 * ps_coordinates.y
+            screen_coordinates.y = screen_size.y - ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "left to right"){
-            screen_coordinates.x = -1 * ps_coordinates.y
+            screen_coordinates.x = ps_coordinates.y
         }
 
         return screen_coordinates
@@ -919,12 +937,13 @@ class Document extends DrawingArea{
     //bounding_box is of the form {size:{x,y}, position:{x,y} given in screen coordinates
     //position of the bounding box refers to the top left corner
     retileAsALine(tiles, bounding_box){
+debugger
         if (tiles.length == 0) return
 
         //Align all the tiles at the origin, then, after alignment has been completed, translate the tiles so that they are inside the bounding box
-        var alignment_type = this.getAlignmentType()
-        var next_tile_position = Document.convertPSCoordinatesToScreenCoordinates({x:0,y:0}, this.direction_buffer.pointer)
-        tiles[0].move(next_tile_position)
+        //var next_tile_position_screen = Document.convertPSCoordinatesToScreenCoordinates({x:0,y:0}, this.direction_buffer.pointer, this.screen_size)
+        //tiles[0].moveScreen(next_tile_position_screen)
+        tiles[0].move({x:0,y:0})
         for (var i = 1; i < tiles.length; i++){
             var next_tile_position_screen = this.getAlignedPositionScreen(tiles[i - 1], tiles[i])
             tiles[i].moveScreen(next_tile_position_screen)
@@ -940,10 +959,12 @@ class Document extends DrawingArea{
             }
         }
 
+        var ps_bounding_box = this.convertScreenCoordinatesBoundingBoxToPSBoundingBox(bounding_box)
+
         for (var i = 0; i < tiles.length; i++){
             var new_position = {}
-            new_position.x = tiles[i].position.x + bounding_box.position.x
-            new_position.y = tiles[i].position.y + bounding_box.position.y
+            new_position.x = tiles[i].position.x + ps_bounding_box.position.x
+            new_position.y = tiles[i].position.y + ps_bounding_box.position.y
             tiles[i].move(new_position)
         }
     }
