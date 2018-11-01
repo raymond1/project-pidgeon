@@ -7,11 +7,8 @@ class LinkedList{
         if (!this.head){
             this.head = new_item;
         }else{
-            var last_item = this.head;
-            while (last_item.next){
-                last_item = last_item.next;
-            }
-            last_item.next = new_item;
+            var last_item = this.last
+            last_item.next = new_item
             new_item.previous = last_item;
         }
     }

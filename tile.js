@@ -191,7 +191,7 @@ class Tile extends DrawingArea{
 
     //Given a set of screen coordinates, saves the corresponding ps coordinates
     set screen_coordinates(position){
-        this.position = Document.convertScreenCoordinatesToPSCoordinates(position, this.parent.direction_buffer.pointer)
+        this.position = Document.convertScreenCoordinatesToPSCoordinates(position, this.parent.direction_buffer.pointer, this.parent.screen_size)
         if (isNaN(this.position.x))
         {
             console.log('position is not a number')
@@ -237,9 +237,15 @@ class Tile extends DrawingArea{
     //Given the top-left coordinates where a tile is to be moved onto the screen, calculates the cooresponding ps coordinates and moves the tile there
     //Moves a tile to a screen coordinates position
     moveScreen(position){
-        console.log(position)
-        var screen_coordinates = Document.convertScreenCoordinatesToPSCoordinates(position, this.parent.direction_buffer.pointer)
-        this.position.x = screen_coordinates.x
-        this.position.y = screen_coordinates.y
+        var corners_screen = DrawingArea.getScreenCorners(position, this.screen_size)
+        var corners_ps = []
+        for (var i = 0; i < 4; i++){
+            corners_ps.push(Document.convertScreenCoordinatesToPSCoordinates(corners_screen[i], this.parent.direction_buffer.pointer, this.parent.screen_size))
+        }
+
+        var bl_corner = DrawingArea.getBLCorner(corners_ps)
+
+        this.position.x = bl_corner.x
+        this.position.y = bl_corner.y
     }
 }

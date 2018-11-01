@@ -273,6 +273,7 @@ class Document extends DrawingArea{
     }
 
 
+/*
     //If there is space for the new tile on a new line, then add it
     //If the operation is successful, return true, otherwise return false
     addTileToNewLine(previous_line_tile, new_tile){
@@ -305,10 +306,12 @@ class Document extends DrawingArea{
 
         }
     }
+*/
 
     //Takes in an array of sizes and positions and calculates the smallest rectangle and size object that will contain all the the rectangles passed in the array
     //Calculations are done in PS coordinates
     //Returns an object with size and position properties
+    //position is on lower-left corner
     areaGlom(tiles_array){
         var return_value = {}
         if (tiles_array.length == 0){
@@ -486,10 +489,9 @@ class Document extends DrawingArea{
     }
 
 
-
     //Given a size (a width and a height) and a position,
-    //calculate the 4 corner positions
-    //Uses PS coordinates
+    //calculate the 4 corner positions, assuming the position passed in is in the upper left corner
+    //Uses screen coordinates
     calculateRectangleCorners(size, position){
         //Order for corners is left top, left bottom, right bottom, right top
         var lt = {x:position.x,y:position.y};
@@ -522,12 +524,41 @@ class Document extends DrawingArea{
         return v1.x * v2.x + v1.y * v2.y
     }
 
-    //screen coordianates if of the form {x,y}. larger x on right, smaller x on left. Larger y on top, smaller y on bottom.
+    //screen coordinates if of the form {x,y}. larger x on right, smaller x on left. Larger y on bottom, smaller y on top.
     //direction_parameters is of a form similar to {primary_direction: "top to bottom", secondary_direction: "left to right"}
-    static convertScreenCoordinatesToPSCoordinates(screen_coordinates, direction_parameters){
-        var direction_vectors = Document.convertDirectionParametersToScreenVectors(direction_parameters)
-        var p = Document.dotProduct(screen_coordinates, direction_vectors[0])
-        var s = Document.dotProduct(screen_coordinates, direction_vectors[1])
+    //screen_size is a size of the document drawing area, given in screen coordinates
+    static convertScreenCoordinatesToPSCoordinates(screen_coordinates, direction_parameters, screen_size){
+        var p
+        var s
+
+        if (!screen_size){
+            debugger
+        }
+        if (direction_parameters.primary_direction == "top to bottom"){
+            p = screen_coordinates.y
+        }
+        else if (direction_parameters.primary_direction == "right to left"){
+            p = screen_size.x - 1 - screen_coordinates.x
+        }
+        else if (direction_parameters.primary_direction == "bottom to top"){
+            p = screen_size.y - 1 - screen_coordinates.y
+        }
+        else if (direction_parameters.primary_direction == "left to right"){
+            p = screen_coordinates.x
+        }
+
+        if (direction_parameters.secondary_direction == "top to bottom"){
+            s = screen_coordinates.y
+        }
+        else if (direction_parameters.secondary_direction == "right to left"){
+            s = screen_size.x - 1 - screen_coordinates.x
+        }
+        else if (direction_parameters.secondary_direction == "bottom to top"){
+            s = screen_size.y - 1 - screen_coordinates.y
+        }
+        else if (direction_parameters.secondary_direction == "left to right"){
+            s = screen_coordinates.x
+        }
 
         return {x:p,y:s}
     }
@@ -584,6 +615,19 @@ class Document extends DrawingArea{
         }
     }
 
+    //Calculations are performed in PS coordinates
+    //Current line refers to the position of the last added tile
+    enoughPrimarySpaceAtCoordinates(tile, coordinates){
+        var tile_x_position = coordinates.x
+        var tile_right_corner_x_position = tile_x_position + tile.size.x - 1
+
+        if (tile_right_corner_x_position < this.size.x){
+            return true
+        }else{
+            return false
+        }
+    }
+
     //Returns whether there is enough space on the same line as the last tile added for the new tile to be added.
     //Currently, this function is incomplete
 
@@ -614,6 +658,17 @@ class Document extends DrawingArea{
             }else{
                 return false
             }
+        }
+    }
+
+    enoughSecondarySpaceAtCoordinates(tile,coordinates){
+        var tile_y_position = coordinates.y
+        var tile_upper_corner_y_position = tile_y_position + tile.size.y - 1
+
+        if (tile_upper_corner_y_position < this.size.y){
+            return true
+        }else{
+            return false
         }
     }
 
@@ -656,6 +711,8 @@ class Document extends DrawingArea{
         return line_bounding_box
     }
 
+    //Given an existing tile and a new tile, aligns the new tile with the existing tile by matching the primary glyph positions
+    //Returns screen coordinates of where the new tile would be placed when done
     getAlignedPositionScreen(existing_tile, new_tile){
         //Calculate the top left corner of the new tile to be added
         var new_screen_coordinates = {}
@@ -664,10 +721,10 @@ class Document extends DrawingArea{
             new_screen_coordinates.y = existing_tile.screen_coordinates.y + existing_tile.screen_size.y
         }
         else if (this.direction_buffer.pointer.primary_direction == "right to left"){
-            new_screen_coordinates.x = existing_tile.screen_coordinates.x - existing_tile.screen_size.x
+            new_screen_coordinates.x = existing_tile.screen_coordinates.x - new_tile.screen_size.x
         }
         else if (this.direction_buffer.pointer.primary_direction == "bottom to top"){
-            new_screen_coordinates.y = existing_tile.screen_coordinates.y - existing_tile.screen_size.y
+            new_screen_coordinates.y = existing_tile.screen_coordinates.y - new_tile.screen_size.y
         }
         else if (this.direction_buffer.pointer.primary_direction == "left to right"){
             new_screen_coordinates.x = existing_tile.screen_coordinates.x + existing_tile.screen_size.x
@@ -690,10 +747,16 @@ class Document extends DrawingArea{
 
     //Returns the lower-left corner in PS coordinates of new_tile after the primary glyph of new_tile has been aligned with that of existing_tile in screen coordinates
     getAlignedPosition(existing_tile,new_tile){
-        var new_screen_coordinates = this.getAlignedPositionScreen(existing_tile,new_tile)
-        var ps_bl_coordinates = Document.convertScreenCoordinatesToPSCoordinates(new_screen_coordinates, this.direction_buffer.pointer)
+        var tl_screen = this.getAlignedPositionScreen(existing_tile,new_tile) //top left in screen coordinates
+        var corners_screen = this.calculateRectangleCorners(new_tile.screen_size, tl_screen)
+        //var bl_corner = DrawingArea.getBLCorner(corners)
 
-        return {x:ps_bl_coordinates.x,y:ps_bl_coordinates.y}
+        var corners_ps = []
+        for (var i = 0; i < 4; i++){
+            corners_ps.push(Document.convertScreenCoordinatesToPSCoordinates(corners_screen[i], this.direction_buffer.pointer, this.screen_size))
+        }
+        var return_value = DrawingArea.getBLCorner(corners_ps)
+        return return_value
     }
 
     //test_area and containing area are of the form: {position: {x,y},size:{x,y}}
@@ -758,8 +821,9 @@ class Document extends DrawingArea{
                     aligned_position = {x:0,y:0}
                 }
                 new_tile.move(aligned_position)
-                new_tile.draw()
+                new_tile.line_number = this.tiles.last?this.tiles.last.line_number:0
                 this.tiles.append(new_tile)
+                new_tile.draw()
             }else{
                 //Could the line be expanded in order to have enough secondary space?
                 //Get the amount of space required for the line expansion
@@ -780,10 +844,27 @@ class Document extends DrawingArea{
         }else{
             console.log('not enough primary space')
             var tile_from_previous_line = this.tiles.last
-            if (this.spaceAvailableOnNextLine(new_tile,tile_from_previous_line)){
-                //Add
+            var line_bounding_box = this.getLineBoundingBox(this.tiles.last.line_number)
+
+            var new_line_coordinates = {x:0, y: line_bounding_box.position.y + line_bounding_box.size.y}
+
+            if (this.spaceAvailableAtCoordinates(new_tile,new_line_coordinates)){
+                new_tile.move(new_line_coordinates)
+                new_tile.line_number = this.tiles.last.line_number + 1
+                this.tiles.append(new_tile)
+                new_tile.draw()
             }
         }
+    }
+
+    spaceAvailableAtCoordinates(tile,coordinates){
+        if (this.enoughPrimarySpaceAtCoordinates(tile,coordinates) && this.enoughSecondarySpaceAtCoordinates(tile,coordinates)){
+            return true
+        }
+        return false
+    }
+    spaceAvailableOnNextLine(){
+
     }
 
     //Removes a tile from the end of the tiles and returns the removed tile
@@ -795,7 +876,10 @@ class Document extends DrawingArea{
 
     //Given a bounding box {size:{x,y}, position:{x,y}} given in ps coordinates, convert the box into screen coordinates
     static convertPSBoundingBoxToScreenCoordinatesBoundingBox(bounding_box, direction_parameters){
-        return {size: Document.getScreenSizeFromPSSize(bounding_box.size, direction_parameters.primary_direction),position: Document.convertPSCoordinatesToScreenCoordinates(bounding_box.position, direction_parameters)}
+        return {
+            size: Document.getScreenSizeFromPSSize(bounding_box.size, direction_parameters.primary_direction),
+            position: Document.convertPSCoordinatesToScreenCoordinates(bounding_box.position, direction_parameters)
+        }
     }
 
     //given a set of ps coordinates {x,y} and a set of direction parameters(i.e{primary_direction: "top to bottom", secondary_direction: "left to right"}), converts them into screen coordinates
@@ -805,26 +889,26 @@ class Document extends DrawingArea{
             screen_coordinates.y = ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "right to left"){
-            screen_coordinates.x = -ps_coordinates.x
+            screen_coordinates.x = -1 * ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "bottom to top"){
-            screen_coordinates.y = -ps_coordinates.x
+            screen_coordinates.y = -1 * ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "left to right"){
-            screen_coordinates.x = -ps_coordinates.x
+            screen_coordinates.x = -1 * ps_coordinates.x
         }
 
         if (direction_parameters.secondary_direction == "top to bottom"){
             screen_coordinates.y = ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "right to left"){
-            screen_coordinates.x = -ps_coordinates.y
+            screen_coordinates.x = -1 * ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "bottom to top"){
-            screen_coordinates.y = -ps_coordinates.y
+            screen_coordinates.y = -1 * ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "left to right"){
-            screen_coordinates.x = -ps_coordinates.y
+            screen_coordinates.x = -1 * ps_coordinates.y
         }
 
         return screen_coordinates
@@ -839,59 +923,28 @@ class Document extends DrawingArea{
 
         //Align all the tiles at the origin, then, after alignment has been completed, translate the tiles so that they are inside the bounding box
         var alignment_type = this.getAlignmentType()
-        if (alignment_type == "lefts"){
-            var next_tile_position = Document.convertPSCoordinatesToScreenCoordinates({x:0,y:0}, this.direction_buffer.pointer)
-            tiles[0].move(next_tile_position)
-            for (var i = 1; i < tiles.length; i++){
-                var next_tile_position = this.getAlignedPositionScreen(tiles[i - 1], tiles[i])
-                tiles[i].moveScreen(next_tile_position)
-            }
+        var next_tile_position = Document.convertPSCoordinatesToScreenCoordinates({x:0,y:0}, this.direction_buffer.pointer)
+        tiles[0].move(next_tile_position)
+        for (var i = 1; i < tiles.length; i++){
+            var next_tile_position_screen = this.getAlignedPositionScreen(tiles[i - 1], tiles[i])
+            tiles[i].moveScreen(next_tile_position_screen)
+        }
 
-            //Shift the tiles right, if necessary to align the primary glyphs
-            var tiles_bounding_box = this.areaGlomScreen(tiles)
-            if (tiles_bounding_box.position.y < 0){
-                for (var i = 0; i < tiles.length; i++){
-                    tiles[i].screen_coordinates = {x:tiles[i].screen_coordinates.x - tiles_bounding_box.position.x, y:tiles[i].screen_coordinates.y }
-                }
-            }
 
+        //In ps coordinates, the new tiles, after being lined up at the origin might descend below the bounding box
+        //They need to be adjusted upwards in ps coordinates
+        var temp_tiles_bounding_box = this.areaGlom(tiles)
+        if (temp_tiles_bounding_box.position.y < 0){
             for (var i = 0; i < tiles.length; i++){
-                tiles[i].screen_coordinates = {x:tiles[i].screen_coordinates.x + bounding_box.position.y,y:tiles[i].screen_coordinates.y}
+                tiles[i].position.y = tiles[i].position.y - temp_tiles_bounding_box.position.y
             }
         }
-        else if (alignment_type == "tops"){
-            //Place all the tiles first, aligning top of the the primary glyphs with the top.
-            //If there are any issues, move the tiles down by the amount that it protrudes above the top
 
-            var next_tile_x_position
-            if (this.direction_buffer.pointer.primary_direction == "left to right"){
-                next_tile_x_position = 0
-            }else if (this.direction_buffer.pointer.primary_direction == "right to left"){
-                next_tile_x_position = this.size.x - tiles[0].size.x + 1
-            }
-
-            tiles[0].moveScreen({x: next_tile_x_position,y:0})
-            for (var i = 1; i < tiles.length; i++){
-                var next_tile_position = this.getAlignedPositionScreen(tiles[i - 1], tiles[i])
-                tiles[i].moveScreen(next_tile_position)
-            }
-
-            //Shifts the tiles down, if necessary
-            var tiles_bounding_box = this.areaGlomScreen(tiles)
-            if (tiles_bounding_box.position.y < 0){
-                for (var i = 0; i < tiles.length; i++){
-                    tiles[i].screen_coordinates = {
-                        x:tiles[i].screen_coordinates.x, 
-                        y:tiles[i].screen_coordinates.y - tiles_bounding_box.position.y
-                    }
-                    console.log(JSON.stringify(tiles[i].screen_coordinates))
-
-                }
-            }
-
-            for (var i = 0; i < tiles.length; i++){
-                tiles[i].screen_coordinates = {x:tiles[i].screen_coordinates.x,y:tiles[i].screen_coordinates.y + bounding_box.position.y}
-            }
+        for (var i = 0; i < tiles.length; i++){
+            var new_position = {}
+            new_position.x = tiles[i].position.x + bounding_box.position.x
+            new_position.y = tiles[i].position.y + bounding_box.position.y
+            tiles[i].move(new_position)
         }
     }
 
