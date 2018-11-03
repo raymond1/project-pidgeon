@@ -38,6 +38,8 @@ $(document).ready(
                         document1.tiles.last.changeSecondaryGlyphLocation(newSecondaryGlyphLocation);
                         document1.retile()
                     }
+                }else if (command == 'debug'){
+                    document1.retile()
                 }
             }
         );

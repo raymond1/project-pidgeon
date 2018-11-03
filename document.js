@@ -536,10 +536,10 @@ class Document extends DrawingArea{
             p = coordinates.y
         }
         else if (direction_parameters.primary_direction == "right to left"){
-            p = screen_size.x - coordinates.x
+            p = screen_size.x - coordinates.x - 1
         }
         else if (direction_parameters.primary_direction == "bottom to top"){
-            p = screen_size.y - coordinates.y
+            p = screen_size.y - coordinates.y - 1
         }
         else if (direction_parameters.primary_direction == "left to right"){
             p = coordinates.x
@@ -751,7 +751,8 @@ class Document extends DrawingArea{
 
         var corners_ps = []
         for (var i = 0; i < 4; i++){
-            corners_ps.push(Document.convertScreenCoordinatesToPSCoordinates(corners_screen[i], this.direction_buffer.pointer, this.screen_size))
+            var corner_ps = Document.convertScreenCoordinatesToPSCoordinates(corners_screen[i], this.direction_buffer.pointer, this.screen_size)
+            corners_ps.push(corner_ps)
         }
         var return_value = DrawingArea.getBLCorner(corners_ps)
         return return_value
