@@ -838,10 +838,6 @@ class Document extends DrawingArea{
                     var tiles_on_current_line = this.getAllTilesOnLine(this.tiles.last.line_number)
 
                     var screen_coordinates_bounding_box_for_new_line = Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(line_bounding_box, this.direction_buffer.pointer, this.screen_size)
-                    if (screen_coordinates_bounding_box_for_new_line.position.x < 0){
-                        debugger
-                        Document.convertPSBoundingBoxToScreenCoordinatesBoundingBox(line_bounding_box, this.direction_buffer.pointer, this.screen_size)
-                    }
 
                     this.retileAsALine(tiles_on_current_line, screen_coordinates_bounding_box_for_new_line)
                     this.draw()
@@ -908,10 +904,10 @@ class Document extends DrawingArea{
             screen_coordinates.y = ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "right to left"){
-            screen_coordinates.x = screen_size.x - ps_coordinates.x
+            screen_coordinates.x = screen_size.x - 1 - ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "bottom to top"){
-            screen_coordinates.y = screen_size.y - ps_coordinates.x
+            screen_coordinates.y = screen_size.y - 1 - ps_coordinates.x
         }
         else if (direction_parameters.primary_direction == "left to right"){
             screen_coordinates.x = ps_coordinates.x
@@ -921,10 +917,10 @@ class Document extends DrawingArea{
             screen_coordinates.y = ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "right to left"){
-            screen_coordinates.x = screen_size.x - ps_coordinates.y
+            screen_coordinates.x = screen_size.x - 1 - ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "bottom to top"){
-            screen_coordinates.y = screen_size.y - ps_coordinates.y
+            screen_coordinates.y = screen_size.y - 1 - ps_coordinates.y
         }
         else if (direction_parameters.secondary_direction == "left to right"){
             screen_coordinates.x = ps_coordinates.y
