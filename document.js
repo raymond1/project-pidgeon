@@ -436,7 +436,7 @@ class Document extends DrawingArea{
         if (!tile_to_modify.secondary_glyph){
             tile_to_modify.secondary_glyph = new Glyph(glyph_image_url, {x:25,y:25}, tile_to_modify);
         }else{
-            tile_to_modify.secondary_glyph = glyph_image_url
+            tile_to_modify.secondary_glyph.image_url = glyph_image_url
         }
         tile_to_modify.changeSecondaryGlyphLocation(this.getDefaultSecondaryGlyphPosition(secondary_glyph_string));
         var modified_tile = this.removeTileFromEnd(tile_to_modify)
