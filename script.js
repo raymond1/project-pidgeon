@@ -55,6 +55,14 @@ $(document).ready(
             }
         );
 
+        $('.eraser').click(
+            function(){
+                document1.tiles.last.undraw()
+                document1.tiles.remove(document1.tiles.last)
+                document1.retile
+            }
+        )
+
         $(window).resize(function() {
             document1.size = {x:$('#message_area').width(), y: $('#message_area').height()};
             document1.retile();

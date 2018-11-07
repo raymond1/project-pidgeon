@@ -28,7 +28,7 @@ function generate(){
     </ul>
 
     <div class='button-group'><button
-         id="backspace-button" type="button" class="backspace">Eraser</button><button
+         type="button" class="eraser">Eraser</button><button
          class="canto-letter-button small" type="button" value="space"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/space.svg" alt="space"></button
     >
 <?php
