@@ -64,7 +64,7 @@ $(document).ready(
         )
 
         $(window).resize(function() {
-            document1.size = {x:$('#message_area').width(), y: $('#message_area').height()};
+            document1.screen_size = {x:$('#message_area').width(), y: $('#message_area').height()};
             document1.retile();
         });
     }

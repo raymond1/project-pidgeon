@@ -3,7 +3,6 @@ class Document extends DrawingArea{
     //The only required parameter is size
     constructor(screen_size){
         super()
-        this.screen_size = {x:screen_size.x,y:screen_size.y}
 
         this.tiles = new LinkedList();
         this.pages = new LinkedList();
@@ -27,15 +26,24 @@ class Document extends DrawingArea{
             this.direction_buffer.add(writing_directions[i]);
         }
 
-        this.size = this.getPSSizeFromScreenSize()
         this.position = {x:0,y:0}
+
+        this.screen_size = screen_size //screen size is used as the primary data storage variable. this.size is simply a reflection of this.screen_size
     }
 
-    getPSSizeFromScreenSize(){
-        if (this.direction_buffer.pointer.primary_direction == "top to bottom"||this.direction_buffer.pointer.primary_direction == "bottom to top"){
-            return {x:this.screen_size.y, y: this.screen_size.x}
+    set screen_size(screen_size){
+        this.size = Document.getPSSizeFromScreenSize(screen_size, this.primary_direction)
+    }
+
+    get screen_size(){
+        return Document.getScreenSizeFromPSSize(this.size, this.direction_buffer.pointer.primary_direction)
+    }
+
+    static getPSSizeFromScreenSize(screen_size,primary_direction){
+        if (primary_direction == "top to bottom"||primary_direction == "bottom to top"){
+            return {x:screen_size.y, y: screen_size.x}
         }else{
-            return {x:this.screen_size.x, y: this.screen_size.y}
+            return {x:screen_size.x, y: screen_size.y}
         }
     }
 
@@ -272,42 +280,6 @@ class Document extends DrawingArea{
         }
     }
 
-
-/*
-    //If there is space for the new tile on a new line, then add it
-    //If the operation is successful, return true, otherwise return false
-    addTileToNewLine(previous_line_tile, new_tile){
-        if (previous_line_tile == null){
-            //check if the tile fits into the page
-            if (Document.isCornerSetWithinCornerSet([{x:0, y:0}, {x:new_tile.size.x - 1, y: new_tile.size.y - 1}], [{x:0,y:0},{x: this.size.x -1, y: this.size.y -1}])) {
-                new_tile.move({x:0,y:0})
-                new_tile.line_number = 0
-                return true
-            }
-            else{
-                return false
-            }
-        }else{
-
-            var previous_line_bounding_box = this.getLineBoundingBox(previous_line_tile.line_number)
-            //var previous_line_bounding_box_lt = {x:0, y:previous_line_bounding_box.position.y + previous_line_bounding_box.size.y - 1}
-            //var previous_line_bounding_box_rb = {x:, y:previous_line_bounding_box.position.y + previous_line_bounding_box.size.y - 1}
-            var test_bounding_box = [{x:0, y:previous_line_bounding_box.position.y + previous_line_bounding_box.size.y + new_tile.size.y - 1},
-                {x:previous_line_bounding_box.size.x - 1, y: previous_line_bounding_box.position.y + previous_line_bounding_box.size.y}]
-            if (Document.isCornerSetWithinCornerSet(test_bounding_box, [{x:0,y:this.size.y -1},{x: this.size.x -1, y: 0}]))
-            {
-                var new_tile_location = {x: 0, y: previous_line_tile.position.y + previous_line_tile.size.y}
-                new_tile.line_number = previous_line_tile.line_number + 1
-                new_tile.move(new_tile_location)
-                return true                
-            }else{
-                return false
-            }
-
-        }
-    }
-*/
-
     //Takes in an array of sizes and positions and calculates the smallest rectangle and size object that will contain all the the rectangles passed in the array
     //Calculations are done in PS coordinates
     //Returns an object with size and position properties in ps coordinates
@@ -403,7 +375,19 @@ class Document extends DrawingArea{
         var old_direction = this.direction_buffer.pointer
 
         this.direction_buffer.pointer = this.direction_buffer.pointer.next
-        this.size = this.getPSSizeFromScreenSize()
+        if (this.direction_buffer.pointer.primary_direction.includes('top')){
+            if (!old_direction.primary_direction.includes('top')){
+                var temp = this.size.x
+                this.size.x = this.size.y
+                this.size.y = temp
+            }
+        }else{
+            if (old_direction.primary_direction.includes('top')){
+                var temp = this.size.x
+                this.size.x = this.size.y
+                this.size.y = temp
+            }            
+        }
 
         this.retile()
     }
@@ -934,7 +918,6 @@ class Document extends DrawingArea{
     //bounding_box is of the form {size:{x,y}, position:{x,y} given in screen coordinates
     //position of the bounding box refers to the top left corner
     retileAsALine(tiles, bounding_box){
-debugger
         if (tiles.length == 0) return
 
         //Align all the tiles at the origin, then, after alignment has been completed, translate the tiles so that they are inside the bounding box

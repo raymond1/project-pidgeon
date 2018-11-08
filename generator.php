@@ -59,14 +59,14 @@ function generate(){
         <?php
                 }
             }
-?><button type='button' class='options' value='place secondary glyph on left'><img src='assets/ui/left.svg' alt='Place glyph onleft'></button
+?><!--<button type='button' class='options' value='place secondary glyph on left'><img src='assets/ui/left.svg' alt='Place glyph onleft'></button
 ><button type='button' class='options' value='place secondary glyph on right'><img src='assets/ui/right.svg' alt='Place glyph on right'></button
 ><button type='button' class='options' value='place secondary glyph on top'><img src='assets/ui/top.svg' alt='Place glyph on top'></button
-><button type='button' class='options' value='place secondary glyph on bottom'><img src='assets/ui/bottom.svg' alt='Place glyph on bottom'></button
+><button type='button' class='options' value='place secondary glyph on bottom'><img src='assets/ui/bottom.svg' alt='Place glyph on bottom'>--></button
 ><button type='button' class='options' value='change writing direction'><img src='assets/ui/writing-direction.svg' alt='Change writing direction'></button
-><button type='button' class='options' value='rotate'><img src='assets/ui/rotate.svg' alt='Rotate'></button
-><button type='button' class='options' value='flip'><img src='assets/ui/flip.svg' alt='Flip'></button>
-    <button type='button' class='options' value='debug'>Debug</button>
+><!--<button type='button' class='options' value='rotate'><img src='assets/ui/rotate.svg' alt='Rotate'></button
+><button type='button' class='options' value='flip'><img src='assets/ui/flip.svg' alt='Flip'>--></button>
+    <!--<button type='button' class='options' value='debug'>Debug</button>-->
     </div>
     <hr>
     <div>
