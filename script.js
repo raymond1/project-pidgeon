@@ -34,8 +34,9 @@ $(document).ready(
                 }else if (command.substring(0, 24) == "place secondary glyph on"){ //Move the location of the secondary glyph around
                     if (document1.tiles.last){
                         newSecondaryGlyphLocation = command.substring(25);
-
-                        document1.tiles.last.changeSecondaryGlyphLocation(newSecondaryGlyphLocation);
+                        if (document1.tiles.size > 0){
+                            document1.tiles.last.changeSecondaryGlyphLocation(newSecondaryGlyphLocation);
+                        }
                         document1.retile()
                     }
                 }else if (command == 'debug'){
@@ -50,7 +51,9 @@ $(document).ready(
                 if (primary_glyphs.indexOf(glyph_value) > -1){//If this is a primary glyph button, add a new tile
                     document1.addPrimaryTile(glyph_value);
                 }else if (secondary_glyphs.indexOf(glyph_value) > -1){//modify the last tile to add the secondary glyph
-                    document1.modifyTile(glyph_value, document1.tiles.last);
+                    if (document1.tiles.size > 0){
+                        document1.modifyTile(glyph_value, document1.tiles.last);
+                    }
                 }
             }
         );
