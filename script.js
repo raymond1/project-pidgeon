@@ -30,7 +30,6 @@ $(document).ready(
                 var command = $(this).attr('value');
                 if (command == "change writing direction"){
                     document1.changeWritingDirection()
-                    console.log(document1.direction_buffer.pointer.primary_direction + '|' + document1.direction_buffer.pointer.secondary_direction)
                 }else if (command.substring(0, 24) == "place secondary glyph on"){ //Move the location of the secondary glyph around
                     if (document1.tiles.last){
                         newSecondaryGlyphLocation = command.substring(25);
@@ -42,6 +41,7 @@ $(document).ready(
                 }else if (command == 'debug'){
                     document1.retile()
                 }
+                $('#encoded_text').html(document1.serialize())
             }
         );
         
@@ -55,6 +55,7 @@ $(document).ready(
                         document1.modifyTile(glyph_value, document1.tiles.last);
                     }
                 }
+                $('#encoded_text').html(document1.serialize())
             }
         );
 
@@ -62,9 +63,15 @@ $(document).ready(
             function(){
                 document1.tiles.last.undraw()
                 document1.tiles.remove(document1.tiles.last)
-                document1.retile
+                document1.retile()
+                $('#encoded_text').html(document1.serialize())
             }
         )
+
+        $('#decode').click(function(){
+            var encoded_text = $('#encoded_text').val()
+            document1.unserialize(encoded_text)
+        })
 
         $(window).resize(function() {
             document1.screen_size = {x:$('#message_area').width(), y: $('#message_area').height()};

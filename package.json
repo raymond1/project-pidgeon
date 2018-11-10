@@ -4,7 +4,8 @@
   "description": "Allows you to see Cantobets printed on the screen.",
   "main": "index.html",
   "dependencies": {
-    "gulp": "^4.0.0"
+    "gulp": "^3.9.1",
+    "yarn": "^1.12.3"
   },
   "devDependencies": {},
   "scripts": {

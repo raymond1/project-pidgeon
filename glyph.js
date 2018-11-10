@@ -11,6 +11,7 @@ class Glyph{
         this.htmlElement = null;
         this.parent = parent_tile;
         this.needs_drawing = true;
+        this.glyph_id = Glyph.getGlyphNameFromImageURL(image_url)
     }
 
     get size(){
@@ -22,6 +23,11 @@ class Glyph{
     }
     get height(){
         return this.size.y;
+    }
+
+    static getGlyphNameFromImageURL(image_url){
+        var glyph_name = image_url.substring(image_directory.length, image_url.length - 4)
+        return glyph_name
     }
 
     //requires that parent_tile has been set

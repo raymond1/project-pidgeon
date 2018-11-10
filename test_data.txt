@@ -1,0 +1,1 @@
+{"direction":{"primary_direction":"left to right","secondary_direction":"top to bottom"},"tiles":[{"primary_glyph_id":"15"},{"primary_glyph_id":"13"}]}

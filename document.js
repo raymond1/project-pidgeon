@@ -960,4 +960,60 @@ class Document extends DrawingArea{
             return "lefts"
         }
     }
+
+    serializeTiles(){
+        var tiles = []
+        var tile = this.tiles.head
+        while (tile){
+            var abstract_tile = {
+                primary_glyph_id: tile.primary_glyph.glyph_id,
+            }
+
+            if (tile.secondary_glyph){
+                abstract_tile.secondary_glyph_location = tile.secondary_glyph_location
+                abstract_tile.secondary_glyph_id = tile.secondary_glyph.glyph_id
+            }
+
+            tiles.push(abstract_tile)
+            tile = tile.next
+        }
+        return tiles
+    }
+
+    //transforms the tiles into a form that can be transmitted over email
+    serialize(){
+        var document_representation = {}
+        document_representation.direction = {}
+        document_representation.direction.primary_direction = this.direction_buffer.pointer.primary_direction
+        document_representation.direction.secondary_direction = this.direction_buffer.pointer.secondary_direction
+        document_representation.tiles = this.serializeTiles()
+
+        return JSON.stringify(document_representation)
+    }
+
+    unserialize(text_input){
+        try{
+            var input_object = JSON.parse(text_input)
+            if (input_object.direction.primary_direction && input_object.direction.primary_direction){
+                var direction_iterator = this.direction_buffer.pointer
+                for (var i = 0; i < this.direction_buffer.size; i++){
+                    if (direction_iterator.primary_direction == input_object.direction.primary_direction && direction_iterator.secondary_direction == input_object.direction.secondary_direction){
+                        this.direction_buffer.pointer = direction_iterator
+                    }
+                    direction_iterator = direction_iterator.next
+                }
+            }
+/*
+            for (var i = 0; i < tiles.tiles.length; i++){
+                var new_tile = new Tile({primary_glyph: primary_glyph})
+            }*/
+
+            this.retile()
+        }
+        catch(e){
+            console.log('Error while decoding message')
+        }
+
+        //each 
+    }
 }
