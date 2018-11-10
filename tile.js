@@ -16,6 +16,11 @@ class Tile extends DrawingArea{
         this.line_number = options.line_number?options.line_number: 0;
     }
 
+    get glyph_id(){
+        var glyph_id = this.primary_glyph.glyph_id
+        return glyph_id
+    }
+
     getBaselineHeight(){
         var distance_from_tile_top_to_primary_glyph_top = Document.convertScreenSizeToPSSize(this.primary_glyph.position, this.parent.direction_buffer.pointer.primary_direction, this.parent.direction_buffer.pointer.secondary_direction).y
         var return_value = this.size.y + distance_from_tile_top_to_primary_glyph_top - this.primary_glyph.size.y

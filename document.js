@@ -407,6 +407,7 @@ class Document extends DrawingArea{
         //this.insertTile(new_tile,this.tiles.last);
 
         this.retileWithNewTile(new_tile)
+        return new_tile
     }
 
     modifyTile(secondary_glyph_string,tile_to_modify){
@@ -425,6 +426,7 @@ class Document extends DrawingArea{
         tile_to_modify.changeSecondaryGlyphLocation(this.getDefaultSecondaryGlyphPosition(secondary_glyph_string));
         var modified_tile = this.removeTileFromEnd(tile_to_modify)
         this.retileWithNewTile(modified_tile)
+        return modified_tile
      }
 
     getDefaultSecondaryGlyphPosition(secondary_glyph_string){
@@ -794,7 +796,6 @@ class Document extends DrawingArea{
     retileWithNewTile(new_tile){
         //What is the size in PS coordinates?
         if (this.enoughPrimarySpaceOnCurrentLine(new_tile)){
-            console.log('enough primary space')
             if (this.enoughSecondarySpaceOnCurrentLine(new_tile)){
                 var aligned_position
                 //add the tile to the line
@@ -826,11 +827,9 @@ class Document extends DrawingArea{
                     this.retileAsALine(tiles_on_current_line, screen_coordinates_bounding_box_for_new_line)
                     this.draw()
                 }else{
-                    console.log('Not enough secondary space')
                 }
             }
         }else{
-            console.log('not enough primary space')
             var tile_from_previous_line = this.tiles.last
             var line_bounding_box = this.getLineBoundingBox(this.tiles.last.line_number)
 
@@ -991,10 +990,19 @@ class Document extends DrawingArea{
         return JSON.stringify(document_representation)
     }
 
+    clear(){
+        var tile_iterator = this.tiles.head
+        while(tile_iterator){
+            tile_iterator.undraw()
+            tile_iterator = tile_iterator.next
+        }
+    }
+
     unserialize(text_input){
         try{
+            this.clear()
             var input_object = JSON.parse(text_input)
-            if (input_object.direction.primary_direction && input_object.direction.primary_direction){
+                if (input_object.direction.primary_direction && input_object.direction.primary_direction){
                 var direction_iterator = this.direction_buffer.pointer
                 for (var i = 0; i < this.direction_buffer.size; i++){
                     if (direction_iterator.primary_direction == input_object.direction.primary_direction && direction_iterator.secondary_direction == input_object.direction.secondary_direction){
@@ -1003,10 +1011,20 @@ class Document extends DrawingArea{
                     direction_iterator = direction_iterator.next
                 }
             }
-/*
-            for (var i = 0; i < tiles.tiles.length; i++){
-                var new_tile = new Tile({primary_glyph: primary_glyph})
-            }*/
+
+            this.tiles = new LinkedList();
+            if (Array.isArray(input_object.tiles)){
+                for (var i = 0; i < input_object.tiles.length; i++){
+                    var new_tile = this.addPrimaryTile(input_object.tiles[i].primary_glyph_id)
+                    if (input_object.tiles[i].secondary_glyph_id){
+                        var secondary_glyph_id = input_object.tiles[i].secondary_glyph_id
+                        this.modifyTile(secondary_glyph_id, new_tile)
+                        if (input_object.tiles[i].secondary_glyph_location){
+                            this.tiles.last.changeSecondaryGlyphLocation(input_object.tiles[i].secondary_glyph_location)
+                        }
+                    }
+                }                
+            }
 
             this.retile()
         }

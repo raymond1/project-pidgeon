@@ -41,7 +41,7 @@ $(document).ready(
                 }else if (command == 'debug'){
                     document1.retile()
                 }
-                $('#encoded_text').html(document1.serialize())
+                $('#encoded_text').val(document1.serialize())
             }
         );
         
@@ -55,16 +55,18 @@ $(document).ready(
                         document1.modifyTile(glyph_value, document1.tiles.last);
                     }
                 }
-                $('#encoded_text').html(document1.serialize())
+                $('#encoded_text').val(document1.serialize())
             }
         );
 
         $('.eraser').click(
             function(){
-                document1.tiles.last.undraw()
-                document1.tiles.remove(document1.tiles.last)
+                if (document1.tiles.last){
+                    document1.tiles.last.undraw()
+                    document1.tiles.remove(document1.tiles.last)                    
+                }
                 document1.retile()
-                $('#encoded_text').html(document1.serialize())
+                $('#encoded_text').val(document1.serialize())
             }
         )
 
