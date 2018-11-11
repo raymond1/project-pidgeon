@@ -14,9 +14,11 @@ for (var i = 1; i <= 37; i++){
 primary_glyphs[0] = 'space';
 
 var secondary_glyphs = [];
-for (var i = 38; i <= 46; i++){
+for (var i = 38; i <= 44; i++){
     secondary_glyphs[i] = `${i}`;
 }
+
+var saliva_symbol = 45;
 
 $(document).ready(
     function(){
@@ -50,10 +52,14 @@ $(document).ready(
                 var glyph_value = $(this).attr('value');
                 if (primary_glyphs.indexOf(glyph_value) > -1){//If this is a primary glyph button, add a new tile
                     document1.addPrimaryTile(glyph_value);
+                    console.log('primary glyph detected')
                 }else if (secondary_glyphs.indexOf(glyph_value) > -1){//modify the last tile to add the secondary glyph
                     if (document1.tiles.size > 0){
                         document1.modifyTile(glyph_value, document1.tiles.last);
+                        console.log('secondary glyph detected')
                     }
+                }else if (glyph_value == '45'){
+                    document1.addSalivaSymbol()
                 }
                 $('#encoded_text').val(document1.serialize())
             }

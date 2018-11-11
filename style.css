@@ -13,13 +13,16 @@ body {
 
 .canto-letter-button {
     display: inline-block;
-    width: 100px;
-    height: 100px;
+    width: 40px;
+    height: 40px;
+    border-style: outset;
+    padding: 3px;
+    margin: 0;
 }
 
 .canto-letter-button.small{
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     border-style: outset;
     padding: 3px;
     margin: 0;

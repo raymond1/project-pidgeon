@@ -395,6 +395,7 @@ class Document extends DrawingArea{
     
     //Takes in a glyph string(a unique string corresponding to each one of the glyphs) and puts a tile with that glyph on the page.
     //This function is executed when the user clicks on a button to add a new primary glyph
+    //The return value is used in case the primary tile that was added needs to be used by another function, which with the current implementation does happen
     addPrimaryTile(primary_glyph_string){
         //1)First create a new tile with the correct glyph so that it has a calculatable size
         var new_glyph =
@@ -408,6 +409,21 @@ class Document extends DrawingArea{
 
         this.retileWithNewTile(new_tile)
         return new_tile
+    }
+
+    addSalivaSymbol(){
+        //1)First create a new tile with the correct glyph so that it has a calculatable size
+        var new_glyph =
+        new Glyph(
+            this.getImageURLFromPrimaryGlyphString(45),
+            {x:25,y:25} //Primary tile size
+        );
+        var new_tile = new Tile({primary_glyph:new_glyph, parent: this});
+
+        //this.insertTile(new_tile,this.tiles.last);
+
+        this.retileWithNewTile(new_tile)
+        return new_tile        
     }
 
     modifyTile(secondary_glyph_string,tile_to_modify){

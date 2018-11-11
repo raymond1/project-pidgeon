@@ -29,29 +29,25 @@ function generate(){
 
     <div class='button-group'><button
          type="button" class="eraser">Eraser</button><button
-         class="canto-letter-button small" type="button" value="space"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/space.svg" alt="space"></button
+         class="canto-letter-button" type="button" value="space"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/space.svg" alt="space"></button
     >
 <?php
 
 	for ($i = 1; $i <= 37; $i++){
 ?>
-<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
+<button class="canto-letter-button" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
 ><?php
     }
 
-	for ($i = 45; $i <= 46; $i++){
+    //Saliva symbol
+	for ($i = 45; $i <= 45; $i++){
 ?>
-<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
-><?php
-        if ($i == 46){
-?>
-            <br>
+<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button>
 <?php
-        }
     }
 	for ($i = 38; $i <= 44; $i++){
         ?>
-<button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
+<button class="canto-letter-button" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
 ><?php
                 if ($i == 46){
         ?>
