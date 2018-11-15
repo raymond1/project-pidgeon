@@ -401,7 +401,7 @@ class Document extends DrawingArea{
         var new_glyph =
         new Glyph(
             this.getImageURLFromPrimaryGlyphString(primary_glyph_string),
-            {x:50,y:50} //Primary tile size
+            {x:25,y:25} //Primary tile size
         );
         var new_tile = new Tile({primary_glyph:new_glyph, parent: this});
 
@@ -411,20 +411,6 @@ class Document extends DrawingArea{
         return new_tile
     }
 
-    addSalivaSymbol(){
-        //1)First create a new tile with the correct glyph so that it has a calculatable size
-        var new_glyph =
-        new Glyph(
-            this.getImageURLFromPrimaryGlyphString(45),
-            {x:25,y:25} //Primary tile size
-        );
-        var new_tile = new Tile({primary_glyph:new_glyph, parent: this});
-
-        //this.insertTile(new_tile,this.tiles.last);
-
-        this.retileWithNewTile(new_tile)
-        return new_tile        
-    }
 
     modifyTile(secondary_glyph_string,tile_to_modify){
         if (!tile_to_modify){
@@ -435,7 +421,7 @@ class Document extends DrawingArea{
 
         var glyph_image_url = this.getImageURLFromPrimaryGlyphString(secondary_glyph_string);
         if (!tile_to_modify.secondary_glyph){
-            tile_to_modify.secondary_glyph = new Glyph(glyph_image_url, {x:25,y:25}, tile_to_modify);
+            tile_to_modify.secondary_glyph = new Glyph(glyph_image_url, {x:7,y:7}, tile_to_modify);
         }else{
             tile_to_modify.secondary_glyph.image_url = glyph_image_url
         }
@@ -1050,4 +1036,28 @@ class Document extends DrawingArea{
 
         //each 
     }
+
+    addSmallSymbol(symbol_name){
+        //1)First create a new tile with the correct glyph so that it has a calculatable size
+        var new_glyph =
+        new Glyph(
+            this.getImageURLFromPrimaryGlyphString(symbol_name),
+            {x:10,y:10} //Primary tile size
+        );
+        var new_tile = new Tile({primary_glyph:new_glyph, parent: this});
+
+        //this.insertTile(new_tile,this.tiles.last);
+
+        this.retileWithNewTile(new_tile)
+        return new_tile        
+    }
+
+    addSalivaSymbol(){
+        this.addSmallSymbol(47)
+    }
+
+    addShortSymbol(){
+        this.addSmallSymbol(45)    
+    }
+
 }

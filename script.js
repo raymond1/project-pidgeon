@@ -59,6 +59,8 @@ $(document).ready(
                         console.log('secondary glyph detected')
                     }
                 }else if (glyph_value == '45'){
+                    document1.addShortSymbol()
+                }else if (glyph_value == '47'){
                     document1.addSalivaSymbol()
                 }
                 $('#encoded_text').val(document1.serialize())

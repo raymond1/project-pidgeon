@@ -40,21 +40,17 @@ function generate(){
     }
 
     //Saliva symbol
-	for ($i = 45; $i <= 45; $i++){
+	for ($i = 45; $i <= 47; $i++){
+        if ($i == 46) continue;
 ?>
 <button class="canto-letter-button small" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button>
 <?php
     }
 	for ($i = 38; $i <= 44; $i++){
         ?>
-<button class="canto-letter-button" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button
-><?php
-                if ($i == 46){
-        ?>
-                    <br>
-        <?php
-                }
-            }
+<button class="canto-letter-button" type="button" value="<?= $i ?>"><img class="canto-letter-svg" src="./assets/cantobet-svg-files/<?= $i ?>.svg" alt="<?= $i?>.svg"></button>
+<?php
+    }
 ?>
 
 <button type='button' class='options' value='place secondary glyph on left'><img src='assets/ui/left.svg' alt='Place glyph onleft'></button
