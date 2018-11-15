@@ -17,7 +17,7 @@ function generate(){
     <h1>Cantobet Input</h1>
     <ul>
         <li>
-            <a target="_blank" href="http://cantoneselang.org/">See http://cantoneselang.org/ for more information on how to interpret the symbols.</a>
+            See <a target="_blank" href="http://cantoneselang.org/">http://cantoneselang.org/</a> for more information on how to interpret the symbols.
         </li>
     </ul>
 
