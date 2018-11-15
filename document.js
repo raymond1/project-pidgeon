@@ -427,6 +427,7 @@ class Document extends DrawingArea{
         }
         tile_to_modify.changeSecondaryGlyphLocation(this.getDefaultSecondaryGlyphPosition(secondary_glyph_string));
         var modified_tile = this.removeTileFromEnd(tile_to_modify)
+        this.retile()
         this.retileWithNewTile(modified_tile)
         return modified_tile
      }

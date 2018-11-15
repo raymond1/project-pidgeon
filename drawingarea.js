@@ -1,7 +1,6 @@
 //A generic rectangular drawing area
 
 class DrawingArea{
-	    //Returns the corner coordinates of the tile
 	constructor(parent){
         this.parent = parent;
 	}
