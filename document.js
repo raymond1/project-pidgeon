@@ -1018,7 +1018,13 @@ class Document extends DrawingArea{
             this.tiles = new LinkedList();
             if (Array.isArray(input_object.tiles)){
                 for (var i = 0; i < input_object.tiles.length; i++){
-                    var new_tile = this.addPrimaryTile(input_object.tiles[i].primary_glyph_id)
+                    var new_tile
+                    if (!isNaN(input_object.tiles[i].primary_glyph_id) && input_object.tiles[i].primary_glyph_id >= 45 && input_object.tiles[i].primary_glyph_id <= 47){
+                        new_tile = this.addSmallSymbol(input_object.tiles[i].primary_glyph_id)
+                    }else{
+                        new_tile = this.addPrimaryTile(input_object.tiles[i].primary_glyph_id)
+                    }
+
                     if (input_object.tiles[i].secondary_glyph_id){
                         var secondary_glyph_id = input_object.tiles[i].secondary_glyph_id
                         this.modifyTile(secondary_glyph_id, new_tile)
