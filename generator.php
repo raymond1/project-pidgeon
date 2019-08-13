@@ -79,9 +79,9 @@ function generate(){
     <script src="tile.js"></script>
     <script src="page.js"></script>
     <script src="cursor.js"></script>
-    <script src="jquery-3.3.1.js"></script>
-    <!--I would prefer that this should point to a locally saved copy-->
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <!--Perhaps the node_modules folder is not the best place to refer to -->
+    <script src="node_modules/jquery/dist/jquery.js"></script>
+    <script src="node_modules/vue/dist/vue.js"></script>
     <script src="script.js"></script>
 </body>
 
