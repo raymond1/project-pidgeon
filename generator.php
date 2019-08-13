@@ -71,8 +71,6 @@ function generate(){
     <button id="decode" type="button">Decode</button>
 
 
-    <!-- ========================================================================================= -->
-    <!-- SCRIPT     -->
     <script src="drawingarea.js"></script>
     <script src="document.js"></script>
     <script src="linkedlist.js"></script>
@@ -82,6 +80,8 @@ function generate(){
     <script src="page.js"></script>
     <script src="cursor.js"></script>
     <script src="jquery-3.3.1.js"></script>
+    <!--I would prefer that this should point to a locally saved copy-->
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script src="script.js"></script>
 </body>
 

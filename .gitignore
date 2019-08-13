@@ -1,3 +1,6 @@
 cantobet-3-scans
 .DS_Store
 node_modules
+*.swp
+*.code-workspace
+index.html
